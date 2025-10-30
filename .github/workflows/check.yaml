@@ -1,0 +1,25 @@
+{
+  "jobs": {
+    "check": {
+      "runs-on": "ubuntu-latest",
+      "steps": [
+        {
+          "uses": "actions/checkout@v5"
+        },
+        {
+          "uses": "cachix/install-nix-action@master"
+        },
+        {
+          "uses": "DeterminateSystems/magic-nix-cache-action@main"
+        },
+        {
+          "run": "nix flake -vv --print-build-logs --accept-flake-config check"
+        }
+      ]
+    }
+  },
+  "on": {
+    "push": {},
+    "workflow_call": {}
+  }
+}
