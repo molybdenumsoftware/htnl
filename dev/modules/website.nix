@@ -1,3 +1,4 @@
+{ config, lib, ... }:
 {
   perSystem =
     { pkgs, ... }:
@@ -5,20 +6,23 @@
       workflowPath = ".github/workflows/publish-website.yaml";
     in
     {
-      packages.website = pkgs.writeTextDir "index.html" ''
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>htnl</title>
-        </head>
-        <body>
-          <h1>htnl</h1>
-          <p><a href="https://github.com/molybdenumsoftware/htnl">GitHub</a></p>
-        </body>
-        </html>
-      '';
+      packages.website =
+        "foo" |> (contents: "<!DOCTYPE html>${contents}") |> pkgs.writeTextDir "index.html"
+      #   ''
+      #   <!DOCTYPE html>
+      #   <html lang="en">
+      #   <head>
+      #       <meta charset="UTF-8">
+      #       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      #       <title>htnl</title>
+      #   </head>
+      #   <body>
+      #     <h1>htnl</h1>
+      #     <p><a href="https://github.com/molybdenumsoftware/htnl">GitHub</a></p>
+      #   </body>
+      #   </html>
+      # ''
+      ;
 
       files.files = [
         {
