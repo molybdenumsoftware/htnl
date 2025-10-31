@@ -5,6 +5,8 @@
     {
       options.gitignore = lib.mkOption {
         type = lib.types.listOf lib.types.singleLineStr;
+        default = [ ];
+        apply = lib.concat [ "result" ];
       };
       config.files.files = lib.singleton {
         path_ = ".gitignore";

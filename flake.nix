@@ -19,6 +19,8 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } (
       { lib, ... }:
       {
+        flake.lib = import ./lib.nix;
+
         _module.args.rootPath = ./.;
 
         systems = [ ];

@@ -7,22 +7,25 @@
     in
     {
       packages.website =
-        "foo" |> (contents: "<!DOCTYPE html>${contents}") |> pkgs.writeTextDir "index.html"
-      #   ''
-      #   <!DOCTYPE html>
-      #   <html lang="en">
-      #   <head>
-      #       <meta charset="UTF-8">
-      #       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      #       <title>htnl</title>
-      #   </head>
-      #   <body>
-      #     <h1>htnl</h1>
-      #     <p><a href="https://github.com/molybdenumsoftware/htnl">GitHub</a></p>
-      #   </body>
-      #   </html>
-      # ''
-      ;
+        with config.flake.lib;
+        html { lang = "en"; } [
+          (head [
+            (meta { charset = "UTF-8"; })
+            (meta {
+              name = "viewport";
+              content = "width=device-width, initial-scale=1.0";
+            })
+            (title "htnl")
+          ])
+          (body [
+            (h1 "htnl")
+            (p [
+              (a { href = "https://github.com/molybdenumsoftware/htnl"; } "GitHub")
+            ])
+          ])
+        ]
+        |> toDocument
+        |> pkgs.writeTextDir "index.html";
 
       files.files = [
         {
