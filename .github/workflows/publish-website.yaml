@@ -1,0 +1,44 @@
+{
+  "concurrency": {
+    "cancel-in-progress": true,
+    "group": "${{ github.workflow }}-${{ github.ref_name }}"
+  },
+  "jobs": {
+    "docs": {
+      "runs-on": "ubuntu-latest",
+      "steps": [
+        {
+          "uses": "actions/checkout@v4"
+        },
+        {
+          "uses": "DeterminateSystems/nix-installer-action@main"
+        },
+        {
+          "uses": "DeterminateSystems/magic-nix-cache-action@main"
+        },
+        {
+          "run": "nix build .#website"
+        },
+        {
+          "uses": "actions/upload-pages-artifact@v4",
+          "with": {
+            "path": "result"
+          }
+        },
+        {
+          "if": "github.ref == 'refs/heads/${{ github.event.repository.default_branch }}'",
+          "uses": "actions/deploy-pages@v4"
+        }
+      ]
+    }
+  },
+  "on": {
+    "pull_request": {},
+    "push": {}
+  },
+  "permissions": {
+    "contents": "read",
+    "id-token": "write",
+    "pages": "write"
+  }
+}
