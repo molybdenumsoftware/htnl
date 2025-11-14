@@ -1,11 +1,17 @@
 { lib }:
 let
+  constants = {
+    raw = "raw";
+    elem = "elem";
+    document = "document";
+  };
+
   spec = import ./spec.nix { inherit lib; };
 
   isVoidTag = tn: spec.elements.${tn}.void or false;
 
   toDocument = content: {
-    _type = "document";
+    _type = constants.document;
     inherit content;
   };
 
@@ -60,11 +66,11 @@ let
       else if type == "list" then
         serializers.fragment ir
       else if type == "set" then
-        if ir._type or null == "document" then
+        if ir._type or null == constants.document then
           serializers.document ir
-        else if ir._type or null == "elem" then
+        else if ir._type or null == constants.elem then
           serializers.elem ir
-        else if ir._type or null == "raw" then
+        else if ir._type or null == constants.raw then
           serializers.raw ir
         else
           serializers.attrs ir
@@ -107,8 +113,8 @@ let
       assert lib.assertMsg (
         lib.isString arg
         || lib.elem arg._type or null [
-          "elem"
-          "raw"
+          constants.elem
+          constants.raw
         ]
         || lib.isDerivation arg
       ) "invalid child";
@@ -120,7 +126,7 @@ let
       content:
       assert lib.assertMsg (lib.isString content) "raw called with non-string";
       {
-        _type = "raw";
+        _type = constants.raw;
         inherit content;
       };
     monomorphic =
@@ -131,7 +137,7 @@ let
         children = validators.children tn children_;
       in
       {
-        _type = "elem";
+        _type = constants.elem;
         inherit tn attrs children;
       };
 
@@ -151,8 +157,8 @@ let
           "list"
         ]
         || lib.elem argB._type or null [
-          "elem"
-          "raw"
+          constants.elem
+          constants.raw
         ]
       then
         argB |> lib.toList |> partial { }
