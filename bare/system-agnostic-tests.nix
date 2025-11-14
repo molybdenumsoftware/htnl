@@ -1,4 +1,4 @@
-# The tests, powered by nix-unit
+# System-agnostic tests, powered by nix-unit
 
 let
   # Please import from the root of the repo

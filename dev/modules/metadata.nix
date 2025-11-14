@@ -12,13 +12,13 @@
       description = {
         plaintext = lib.mkOption {
           type = lib.types.singleLineStr;
-          default = "Nix library for declaring HTML";
+          default = "Nix library for declaring and bundling HTML";
         };
         ir = lib.mkOption {
           type = lib.types.unspecified;
           default = p { } [
             (a { href = "https://nix.dev/tutorials/nix-language"; } "Nix")
-            " library for declaring "
+            " library for declaring and bundling "
             (a { href = "https://html.spec.whatwg.org"; } "HTML")
           ];
         };

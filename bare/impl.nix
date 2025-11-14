@@ -34,9 +34,9 @@ let
 
     attr = name: value: [
       name
-      (lib.optionals (lib.isString value) [
+      (lib.optionals (lib.isString value || lib.isDerivation value) [
         ''="''
-        (lib.escapeXML value)
+        (value |> toString |> lib.escapeXML)
         ''"''
       ])
     ];
@@ -94,6 +94,8 @@ let
       if facts.boolean or false then
         assert lib.assertMsg value "non-true value for boolean attribute `${name}` of tag `${tn}`";
         value
+      else if lib.isDerivation value then
+        value
       else
         assert lib.assertMsg (lib.isString value) "non-string attribute value";
         value;
@@ -108,6 +110,7 @@ let
           "elem"
           "raw"
         ]
+        || lib.isDerivation arg
       ) "invalid child";
       arg;
   };
@@ -166,10 +169,62 @@ let
   };
 
   serialize = ir: serializers.unknown ir |> lib.flatten |> lib.concatStrings;
+
+  bundle =
+    pkgs:
+    {
+      name ? "htnl-bundle",
+      # FIXME support receiving basePath
+      htmlDocuments,
+    }:
+    htmlDocuments
+    |>
+      lib.foldlAttrs
+        (
+          acc: htmlDocumentPath: htmlDocument:
+          let
+            htmlString = serialize htmlDocument;
+
+            documentAssetLines =
+              htmlString
+              |> builtins.getContext
+              |> lib.mapAttrs (
+                drvPath: _:
+                ''cp -r ${
+                  # This returns the `outPath` of the *.drv
+                  import drvPath
+                } "$out/nix/store"''
+              );
+          in
+          {
+            htmlFileLines = lib.concat acc.htmlFileLines [
+              ''mkdir -p "$out/${builtins.dirOf htmlDocumentPath}"''
+              ''echo -n ${lib.escapeShellArg htmlString} > "$out/${htmlDocumentPath}"''
+            ];
+
+            assetLines = acc.assetLines // documentAssetLines;
+          }
+        )
+        {
+          htmlFileLines = [ ];
+          assetLines = { };
+        }
+    |> (
+      { htmlFileLines, assetLines }:
+      [
+        htmlFileLines
+        ''mkdir -p "$out"'' # support empty bundles
+        (lib.optionalString (assetLines != { }) ''mkdir -p "$out/nix/store"'')
+        (lib.attrValues assetLines)
+      ]
+    )
+    |> lib.flatten
+    |> lib.concatLines
+    |> pkgs.runCommand name { };
 in
 # public API
 {
-  inherit serialize toDocument;
+  inherit serialize toDocument bundle;
   inherit (ctors) raw;
   polymorphic = {
     element = ctors.polymorphic;

@@ -11,9 +11,13 @@
     let
       workflowPath = ".github/workflows/publish-website.yaml";
 
-      indexHtml =
+      website =
         let
-          inherit (config.lib) serialize raw toDocument;
+          inherit (config.lib)
+            raw
+            toDocument
+            bundle
+            ;
           inherit (config.lib.polymorphic.partials)
             a
             body
@@ -48,13 +52,16 @@
             })
             (link {
               rel = "stylesheet";
-              href = "highlightjs.css";
+              href = inputs.highlightjs-stylesheet |> lib.readFile |> pkgs.writeText "highlightjs.css";
             })
+
             (script { type = "module"; } (raw
             # js
             ''
-              import hljs from './highlight.js';
-              import nix from './highlight-nix.js';
+              import hljs from '${
+                inputs.highlightjs-esmodule |> lib.readFile |> pkgs.writeText "highlightjs.js"
+              }';
+              import nix from '${inputs.highlightjs-nix |> lib.readFile |> pkgs.writeText "highlightjs-nix.js"}';
               hljs.registerLanguage('nix', nix);
               hljs.highlightAll()
             ''))
@@ -85,7 +92,9 @@
                 [
                   ''<svg role="img">''
                   ''<title>${config.metadata.title}</title>''
-                  ''<use href="graphics.svg#content"></use>''
+                  ''<use href="${
+                    rootPath + "/dev/modules/graphics/inkscape.svg" |> lib.readFile |> pkgs.writeText "graphics.svg"
+                  }#content"></use>''
                   ''</svg>''
                 ]
                 |> lib.concatStrings
@@ -93,7 +102,17 @@
               )
 
               (pre { class = "overflow-scroll"; } (
-                code { class = "language-nix"; } (rootPath + "/bare/tests.nix" |> lib.readFile)
+                code { class = "language-nix"; } (rootPath + "/bare/system-agnostic-tests.nix" |> lib.readFile)
+              ))
+
+              (p { } [
+                "It even "
+                (em "bundles")
+                " for you 🫢"
+              ])
+
+              (pre { class = "overflow-scroll"; } (
+                code { class = "language-nix"; } (rootPath + "/dev/modules/tests/bundling.nix" |> lib.readFile)
               ))
 
               (p { } [ "Enforces correct tag hierarchy? No" ])
@@ -119,48 +138,42 @@
           )
         ]
         |> toDocument
-        |> serialize
-        |> pkgs.writeText "index.html"
+        |> (indexHtml: {
+          name = "${config.metadata.title}-website-bundle";
+          htmlDocuments."index.html" = indexHtml;
+        })
+        |> bundle pkgs
         |> (
-          indexHtml:
-          pkgs.runCommand "validated-index.html"
+          bundle:
+          pkgs.runCommand "${config.metadata.title}-website"
             {
-              nativeBuildInputs = [ pkgs.validator-nu ];
+              nativeBuildInputs = [
+                pkgs.validator-nu
+                pkgs.tailwindcss_4
+              ];
             }
             ''
               mkdir $out
-              vnu --Werror ${indexHtml}
-              ln -s ${indexHtml} $out/index.html
+              cp -r ${bundle}/* $out
+              html_files=$(find -L $out -not -path $out'/nix/store/*' -type f)
+              vnu --Werror $html_files
+              tailwindcss -i ${inputCss} --cwd $out -o $out/style.css
             ''
         );
 
       inputCss = pkgs.writeText "input.css" ''
-        @import "tailwindcss" source("${indexHtml}");
+        @import "tailwindcss";
         @plugin "@tailwindcss/typography";
       '';
     in
     {
+      packages = {
+        inherit website;
+      };
+
       make-shells.default.inputsFrom = [
-        indexHtml
         psArgs.config.packages.website
       ];
-
-      packages.website =
-        pkgs.runCommand "website"
-          {
-            nativeBuildInputs = [
-              pkgs.tailwindcss_4
-            ];
-          }
-          ''
-            mkdir $out
-            ln -s ${indexHtml}/index.html $out
-            ln -s ${rootPath + "/dev/modules/graphics/inkscape.svg"} $out/graphics.svg
-            ln -s ${inputs.highlightjs-stylesheet} $out/highlightjs.css
-            ln -s ${inputs.highlightjs-esmodule} $out/highlight.js
-            ln -s ${inputs.highlightjs-nix} $out/highlight-nix.js
-            tailwindcss -i ${inputCss} -o $out/style.css
-          '';
 
       files.files = [
         {

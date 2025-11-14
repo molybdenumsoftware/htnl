@@ -7,8 +7,8 @@
         env.NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
         packages = [ pkgs.nix-unit ];
       };
-      checks.unit-tests =
-        pkgs.runCommand "unit-tests"
+      checks."tests:system-agnostic" =
+        pkgs.runCommand "system-agnostic-tests"
           {
             env.NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
             nativeBuildInputs = [ pkgs.nix-unit ];
@@ -17,7 +17,7 @@
             export HOME="$(realpath .)"
             nix-unit --eval-store "$HOME" \
               --extra-experimental-features pipe-operators \
-              ${rootPath + "/bare"}/tests.nix
+              ${rootPath + "/bare"}/system-agnostic-tests.nix
             touch $out
           '';
     };
