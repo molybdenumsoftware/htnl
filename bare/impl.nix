@@ -8,7 +8,7 @@ let
 
   spec = import ./spec.nix { inherit lib; };
 
-  isVoidTag = tn: spec.elements.${tn}.void or false;
+  isVoidTag = tagName: spec.elements.${tagName}.void or false;
 
   toDocument = content: {
     _type = constants.document;
@@ -24,16 +24,16 @@ let
 
     elem = ir: [
       "<"
-      ir.tn
-      (lib.optionals (ir.attrs != { }) [
+      ir.tagName
+      (lib.optionals (ir.attributes != { }) [
         " "
-        (serializers.attrs ir.attrs)
+        (serializers.attributes ir.attributes)
       ])
       ">"
-      (lib.optionals (!isVoidTag ir.tn) [
+      (lib.optionals (!isVoidTag ir.tagName) [
         (serializers.fragment ir.children)
         "</"
-        ir.tn
+        ir.tagName
         ">"
       ])
     ];
@@ -47,7 +47,7 @@ let
       ])
     ];
 
-    attrs = attrs: attrs |> lib.mapAttrsToList serializers.attr |> lib.intersperse " ";
+    attributes = attributes: attributes |> lib.mapAttrsToList serializers.attr |> lib.intersperse " ";
 
     text = lib.escapeXML;
 
@@ -73,7 +73,7 @@ let
         else if ir._type or null == constants.raw then
           serializers.raw ir
         else
-          serializers.attrs ir
+          serializers.attributes ir
       else
         throw "cannot serialize value (type: ${type})";
   };
@@ -81,24 +81,24 @@ let
   # Validity is indicated by subject value being returned successfully
   validators = {
     tagName =
-      tn:
-      assert lib.isString tn;
-      assert lib.match "[0-9a-zA-Z]+" tn == [ ];
-      tn;
+      tagName:
+      assert lib.isString tagName;
+      assert lib.match "[0-9a-zA-Z]+" tagName == [ ];
+      tagName;
 
     attributes =
-      tn: attrs:
-      assert lib.isAttrs attrs;
-      validators.attribute tn |> lib.flip lib.mapAttrs attrs;
+      tagName: attributes:
+      assert lib.isAttrs attributes;
+      validators.attribute tagName |> lib.flip lib.mapAttrs attributes;
 
     attribute =
-      tn: name: value:
+      tagName: name: value:
       let
-        facts = spec.elements.${tn}.attributes.${name} or null;
+        facts = spec.elements.${tagName}.attributes.${name} or null;
       in
-      assert lib.assertMsg (facts != null) "fattribute ${name} not allowed on tag ${tn}";
+      assert lib.assertMsg (facts != null) "fattribute ${name} not allowed on tag ${tagName}";
       if facts.boolean or false then
-        assert lib.assertMsg value "non-true value for boolean attribute `${name}` of tag `${tn}`";
+        assert lib.assertMsg value "non-true value for boolean attribute `${name}` of tag `${tagName}`";
         value
       else if lib.isDerivation value then
         value
@@ -106,10 +106,10 @@ let
         assert lib.assertMsg (lib.isString value) "non-string attribute value";
         value;
 
-    children = tn: map (validators.child tn);
+    children = tagName: map (validators.child tagName);
 
     child =
-      tn: arg:
+      tagName: arg:
       assert lib.assertMsg (
         lib.isString arg
         || lib.elem arg._type or null [
@@ -130,22 +130,22 @@ let
         inherit content;
       };
     monomorphic =
-      tn_: attrs_: children_:
+      tagName_: attributes_: children_:
       let
-        tn = validators.tagName tn_;
-        attrs = validators.attributes tn attrs_;
-        children = validators.children tn children_;
+        tagName = validators.tagName tagName_;
+        attributes = validators.attributes tagName attributes_;
+        children = validators.children tagName children_;
       in
       {
         _type = constants.elem;
-        inherit tn attrs children;
+        inherit tagName attributes children;
       };
 
     polymorphic =
-      tn:
+      tagName:
       let
-        partial = ctors.monomorphic tn;
-        isVoid = isVoidTag tn;
+        partial = ctors.monomorphic tagName;
+        isVoid = isVoidTag tagName;
       in
       argB:
       let
@@ -166,7 +166,7 @@ let
         if isVoid then
           partial argB [ ]
           // {
-            __functor = _: _: throw "attempt to pass children to void element ${tn}";
+            __functor = _: _: throw "attempt to pass children to void element ${tagName}";
           }
         else
           children: children |> lib.toList |> partial argB
