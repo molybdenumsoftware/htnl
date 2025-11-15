@@ -110,15 +110,18 @@ let
 
     child =
       tagName: arg:
-      assert lib.assertMsg (
-        lib.isString arg
-        || lib.elem arg._type or null [
-          constants.elem
-          constants.raw
-        ]
-        || lib.isDerivation arg
-      ) "invalid child";
-      arg;
+      if lib.isList arg then
+        validators.children tagName arg
+      else
+        assert lib.assertMsg (
+          lib.isString arg
+          || lib.elem arg._type or null [
+            constants.elem
+            constants.raw
+          ]
+          || lib.isDerivation arg
+        ) "invalid child";
+        arg;
   };
 
   ctors = {

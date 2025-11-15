@@ -72,4 +72,17 @@ in
     expr = h "a" { href = "/"; } "foo" |> serialize;
     expected = ''<a href="/">foo</a>'';
   };
+  testFlatteningOfChildren = {
+    expr =
+      h "div" [
+        [
+          [
+            (h "p" "a")
+          ]
+        ]
+        (h "p" "b")
+      ]
+      |> serialize;
+    expected = ''<div><p>a</p><p>b</p></div>'';
+  };
 }

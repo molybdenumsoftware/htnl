@@ -79,90 +79,88 @@
                 ]
                 |> lib.concatStringsSep " ";
             }
-            (
-              lib.flatten [
-                (div { class = "prose prose-invert"; } [
-                  (p [
-                    "You've been hand-writing HTML string literals in Nix-lang—"
-                    (em "admit it.")
-                  ])
-                  (p "It's tedious. It's unsafe. Stop it.")
-                  (p "we are Nixers, we can make things. here is a library for declaring HTML.")
+            [
+              (div { class = "prose prose-invert"; } [
+                (p [
+                  "You've been hand-writing HTML string literals in Nix-lang—"
+                  (em "admit it.")
                 ])
-                (
-                  [
-                    ''<svg role="img">''
-                    ''<title>${config.metadata.title}</title>''
-                    ''<use href="${
-                      rootPath + "/dev/modules/graphics/inkscape.svg" |> lib.readFile |> pkgs.writeText "graphics.svg"
-                    }#content"></use>''
-                    ''</svg>''
+                (p "It's tedious. It's unsafe. Stop it.")
+                (p "we are Nixers, we can make things. here is a library for declaring HTML.")
+              ])
+              (
+                [
+                  ''<svg role="img">''
+                  ''<title>${config.metadata.title}</title>''
+                  ''<use href="${
+                    rootPath + "/dev/modules/graphics/inkscape.svg" |> lib.readFile |> pkgs.writeText "graphics.svg"
+                  }#content"></use>''
+                  ''</svg>''
+                ]
+                |> lib.concatStrings
+                |> raw
+              )
+
+              (
+                let
+                  dir = rootPath + "/bare/system-agnostic-tests";
+                in
+                dir
+                |> builtins.readDir
+                |> lib.mapAttrsToList (
+                  fileName: _:
+                  div [
+                    (p [
+                      (code fileName)
+                      ":"
+                    ])
+                    (pre { class = "overflow-scroll"; } (
+                      code { class = "language-nix"; } (dir + "/${fileName}" |> lib.readFile)
+                    ))
                   ]
-                  |> lib.concatStrings
-                  |> raw
                 )
+              )
 
+              (p { } [
+                "It even "
+                (em "bundles")
+                " for you 🫢"
+              ])
+
+              (pre { class = "overflow-scroll"; } (
+                code { class = "language-nix"; } (rootPath + "/dev/modules/tests/bundling.nix" |> lib.readFile)
+              ))
+
+              (div { class = "prose prose-invert"; } [
                 (
-                  let
-                    dir = rootPath + "/bare/system-agnostic-tests";
-                  in
-                  dir
-                  |> builtins.readDir
-                  |> lib.mapAttrsToList (
-                    fileName: _:
-                    div [
-                      (p [
-                        (code fileName)
-                        ":"
-                      ])
-                      (pre { class = "overflow-scroll"; } (
-                        code { class = "language-nix"; } (dir + "/${fileName}" |> lib.readFile)
-                      ))
-                    ]
-                  )
+                  p
+                  <| lib.concatLines [
+                    "The  HTML intermediate representation values produced by this library are considered private."
+                    "Their internal values may change."
+                  ]
                 )
+              ])
 
-                (p { } [
-                  "It even "
-                  (em "bundles")
-                  " for you 🫢"
-                ])
+              (p { } [ "Enforces correct tag hierarchy? No" ])
 
-                (pre { class = "overflow-scroll"; } (
-                  code { class = "language-nix"; } (rootPath + "/dev/modules/tests/bundling.nix" |> lib.readFile)
-                ))
+              (p { } [ "CSS specific features? No" ])
 
-                (div { class = "prose prose-invert"; } [
-                  (
-                    p
-                    <| lib.concatLines [
-                      "The  HTML intermediate representation values produced by this library are considered private."
-                      "Their internal values may change."
-                    ]
-                  )
-                ])
+              (p { } [ "SVG support? No" ])
 
-                (p { } [ "Enforces correct tag hierarchy? No" ])
+              (p { } [ "Requires IFD? No, this is pure lib" ])
 
-                (p { } [ "CSS specific features? No" ])
+              (p { } [ "Available as both flake and bare Nix" ])
 
-                (p { } [ "SVG support? No" ])
+              (p { } [ "Go and rebuild the web in Nix!" ])
 
-                (p { } [ "Requires IFD? No, this is pure lib" ])
+              (p { } [ "Requires experimental feature pipe-operators" ])
 
-                (p { } [ "Available as both flake and bare Nix" ])
+              (p { } [ "Sorry" ])
 
-                (p { } [ "Go and rebuild the web in Nix!" ])
+              (p { } [ "(not sorry)" ])
 
-                (p { } [ "Requires experimental feature pipe-operators" ])
-
-                (p { } [ "Sorry" ])
-
-                (p { } [ "(not sorry)" ])
-
-                (a { href = config.metadata.repository.url; } (code config.metadata.repository.url))
-              ]
-            )
+              (a { href = config.metadata.repository.url; } (code config.metadata.repository.url))
+            ]
           )
         ]
         |> toDocument
