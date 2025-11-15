@@ -121,15 +121,17 @@
                 )
               )
 
-              (p { } [
-                "It even "
-                (em "bundles")
-                " for you 🫢"
-              ])
+              (div [
+                (p { } [
+                  "It even "
+                  (em "bundles")
+                  " for you 🫢"
+                ])
 
-              (pre { class = "overflow-scroll"; } (
-                code { class = "language-nix"; } (rootPath + "/dev/modules/tests/bundling.nix" |> lib.readFile)
-              ))
+                (pre { class = "overflow-scroll"; } (
+                  code { class = "language-nix"; } (rootPath + "/dev/modules/tests/bundling.nix" |> lib.readFile)
+                ))
+              ])
 
               (div { class = "prose prose-invert"; } [
                 (
