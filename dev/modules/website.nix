@@ -79,72 +79,90 @@
                 ]
                 |> lib.concatStringsSep " ";
             }
-            [
-              (div { class = "prose prose-invert"; } [
-                (p [
-                  "You've been hand-writing HTML string literals in Nix-lang—"
-                  (em "admit it.")
+            (
+              lib.flatten [
+                (div { class = "prose prose-invert"; } [
+                  (p [
+                    "You've been hand-writing HTML string literals in Nix-lang—"
+                    (em "admit it.")
+                  ])
+                  (p "It's tedious. It's unsafe. Stop it.")
+                  (p "we are Nixers, we can make things. here is a library for declaring HTML.")
                 ])
-                (p "It's tedious. It's unsafe. Stop it.")
-                (p "we are Nixers, we can make things. here is a library for declaring HTML.")
-              ])
-              (
-                [
-                  ''<svg role="img">''
-                  ''<title>${config.metadata.title}</title>''
-                  ''<use href="${
-                    rootPath + "/dev/modules/graphics/inkscape.svg" |> lib.readFile |> pkgs.writeText "graphics.svg"
-                  }#content"></use>''
-                  ''</svg>''
-                ]
-                |> lib.concatStrings
-                |> raw
-              )
-
-              (pre { class = "overflow-scroll"; } (
-                code { class = "language-nix"; } (rootPath + "/bare/system-agnostic-tests.nix" |> lib.readFile)
-              ))
-
-              (p { } [
-                "It even "
-                (em "bundles")
-                " for you 🫢"
-              ])
-
-              (pre { class = "overflow-scroll"; } (
-                code { class = "language-nix"; } (rootPath + "/dev/modules/tests/bundling.nix" |> lib.readFile)
-              ))
-
-              (div { class = "prose prose-invert"; } [
                 (
-                  p
-                  <| lib.concatLines [
-                    "The  HTML intermediate representation values produced by this library are considered private."
-                    "Their internal values may change."
+                  [
+                    ''<svg role="img">''
+                    ''<title>${config.metadata.title}</title>''
+                    ''<use href="${
+                      rootPath + "/dev/modules/graphics/inkscape.svg" |> lib.readFile |> pkgs.writeText "graphics.svg"
+                    }#content"></use>''
+                    ''</svg>''
                   ]
+                  |> lib.concatStrings
+                  |> raw
                 )
-              ])
 
-              (p { } [ "Enforces correct tag hierarchy? No" ])
+                (
+                  let
+                    dir = rootPath + "/bare/system-agnostic-tests";
+                  in
+                  dir
+                  |> builtins.readDir
+                  |> lib.mapAttrsToList (
+                    fileName: _:
+                    div [
+                      (p [
+                        (code fileName)
+                        ":"
+                      ])
+                      (pre { class = "overflow-scroll"; } (
+                        code { class = "language-nix"; } (dir + "/${fileName}" |> lib.readFile)
+                      ))
+                    ]
+                  )
+                )
 
-              (p { } [ "CSS specific features? No" ])
+                (p { } [
+                  "It even "
+                  (em "bundles")
+                  " for you 🫢"
+                ])
 
-              (p { } [ "SVG support? No" ])
+                (pre { class = "overflow-scroll"; } (
+                  code { class = "language-nix"; } (rootPath + "/dev/modules/tests/bundling.nix" |> lib.readFile)
+                ))
 
-              (p { } [ "Requires IFD? No, this is pure lib" ])
+                (div { class = "prose prose-invert"; } [
+                  (
+                    p
+                    <| lib.concatLines [
+                      "The  HTML intermediate representation values produced by this library are considered private."
+                      "Their internal values may change."
+                    ]
+                  )
+                ])
 
-              (p { } [ "Available as both flake and bare Nix" ])
+                (p { } [ "Enforces correct tag hierarchy? No" ])
 
-              (p { } [ "Go and rebuild the web in Nix!" ])
+                (p { } [ "CSS specific features? No" ])
 
-              (p { } [ "Requires experimental feature pipe-operators" ])
+                (p { } [ "SVG support? No" ])
 
-              (p { } [ "Sorry" ])
+                (p { } [ "Requires IFD? No, this is pure lib" ])
 
-              (p { } [ "(not sorry)" ])
+                (p { } [ "Available as both flake and bare Nix" ])
 
-              (a { href = config.metadata.repository.url; } (code config.metadata.repository.url))
-            ]
+                (p { } [ "Go and rebuild the web in Nix!" ])
+
+                (p { } [ "Requires experimental feature pipe-operators" ])
+
+                (p { } [ "Sorry" ])
+
+                (p { } [ "(not sorry)" ])
+
+                (a { href = config.metadata.repository.url; } (code config.metadata.repository.url))
+              ]
+            )
           )
         ]
         |> toDocument
