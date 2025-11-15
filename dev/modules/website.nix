@@ -115,6 +115,16 @@
                 code { class = "language-nix"; } (rootPath + "/dev/modules/tests/bundling.nix" |> lib.readFile)
               ))
 
+              (div { class = "prose prose-invert"; } [
+                (
+                  p
+                  <| lib.concatLines [
+                    "The  HTML intermediate representation values produced by this library are considered private."
+                    "Their internal values may change."
+                  ]
+                )
+              ])
+
               (p { } [ "Enforces correct tag hierarchy? No" ])
 
               (p { } [ "CSS specific features? No" ])
