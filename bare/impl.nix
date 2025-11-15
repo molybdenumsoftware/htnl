@@ -2,7 +2,7 @@
 let
   constants = {
     raw = "raw";
-    elem = "elem";
+    element = "element";
     document = "document";
   };
 
@@ -19,10 +19,10 @@ let
   serializers = {
     document = ir: [
       "<!DOCTYPE html>"
-      (serializers.elem ir.content)
+      (serializers.element ir.content)
     ];
 
-    elem = ir: [
+    element = ir: [
       "<"
       ir.tagName
       (lib.optionals (ir.attributes != { }) [
@@ -68,8 +68,8 @@ let
       else if type == "set" then
         if ir._type or null == constants.document then
           serializers.document ir
-        else if ir._type or null == constants.elem then
-          serializers.elem ir
+        else if ir._type or null == constants.element then
+          serializers.element ir
         else if ir._type or null == constants.raw then
           serializers.raw ir
         else
@@ -116,7 +116,7 @@ let
         assert lib.assertMsg (
           lib.isString arg
           || lib.elem arg._type or null [
-            constants.elem
+            constants.element
             constants.raw
           ]
           || lib.isDerivation arg
@@ -140,7 +140,7 @@ let
         children = validators.children tagName children_;
       in
       {
-        _type = constants.elem;
+        _type = constants.element;
         inherit tagName attributes children;
       };
 
@@ -160,7 +160,7 @@ let
           "list"
         ]
         || lib.elem argB._type or null [
-          constants.elem
+          constants.element
           constants.raw
         ]
       then
