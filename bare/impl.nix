@@ -120,7 +120,7 @@ let
             constants.raw
           ]
           || lib.isDerivation arg
-        ) "invalid child";
+        ) (lib.trace arg "invalid child");
         arg;
   };
 
