@@ -1,9 +1,9 @@
 { lib }:
 let
   constants = {
-    raw = "raw";
-    element = "element";
-    document = "document";
+    raw = "htnl-raw";
+    element = "htnl-element";
+    document = "htnl-document";
   };
 
   spec = import ./spec.nix { inherit lib; };
@@ -11,7 +11,7 @@ let
   isVoidTag = tagName: spec.elements.${tagName}.void or false;
 
   toDocument = content: {
-    _type = constants.document;
+    type = constants.document;
     inherit content;
   };
 
@@ -66,11 +66,11 @@ let
       else if type == "list" then
         serializers.fragment ir
       else if type == "set" then
-        if ir._type or null == constants.document then
+        if ir.type or null == constants.document then
           serializers.document ir
-        else if ir._type or null == constants.element then
+        else if ir.type or null == constants.element then
           serializers.element ir
-        else if ir._type or null == constants.raw then
+        else if ir.type or null == constants.raw then
           serializers.raw ir
         else
           serializers.attributes ir
@@ -115,7 +115,7 @@ let
       else
         assert lib.assertMsg (
           lib.isString arg
-          || lib.elem arg._type or null [
+          || lib.elem arg.type or null [
             constants.element
             constants.raw
           ]
@@ -129,7 +129,7 @@ let
       content:
       assert lib.assertMsg (lib.isString content) "raw called with non-string";
       {
-        _type = constants.raw;
+        type = constants.raw;
         inherit content;
       };
     monomorphic =
@@ -140,7 +140,7 @@ let
         children = validators.children tagName children_;
       in
       {
-        _type = constants.element;
+        type = constants.element;
         inherit tagName attributes children;
       };
 
@@ -159,7 +159,7 @@ let
           "string"
           "list"
         ]
-        || lib.elem argB._type or null [
+        || lib.elem argB.type or null [
           constants.element
           constants.raw
         ]

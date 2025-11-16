@@ -137,8 +137,9 @@
                 (
                   p
                   <| lib.concatLines [
-                    "The  HTML intermediate representation values produced by this library are considered private."
-                    "Their internal values may change."
+                    "This library produces HTML intermediate representation values (hereinafter IR)."
+                    "Attributes of IR that are documented are, of course, public."
+                    "Undocumented ones are private and considered unstable."
                   ]
                 )
               ])
