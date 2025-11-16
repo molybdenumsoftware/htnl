@@ -15,7 +15,7 @@
         let
           inherit (config.lib)
             raw
-            toDocument
+            document
             bundle
             ;
           inherit (config.lib.polymorphic.partials)
@@ -166,7 +166,7 @@
             ]
           )
         ]
-        |> toDocument
+        |> document
         |> (indexHtml: {
           name = "${config.metadata.title}-website-bundle";
           htmlDocuments."index.html" = indexHtml;

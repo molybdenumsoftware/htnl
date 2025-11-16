@@ -5,7 +5,7 @@
   perSystem =
     { pkgs, ... }:
     let
-      inherit (config.lib) toDocument bundle;
+      inherit (config.lib) document bundle;
       h = config.lib.polymorphic.element;
 
       # Example output:
@@ -61,14 +61,14 @@
                     (h "a" { href = file; } "Download")
                   ])
                 ]
-                |> toDocument;
+                |> document;
               "blog/first-entry.html" =
                 h "html" [
                   (h "body" [
                     (h "a" { href = file; } "Download")
                   ])
                 ]
-                |> toDocument;
+                |> document;
             };
           }
           |> bundle pkgs
@@ -85,7 +85,7 @@
 
         "tests:bundling:without-assets" =
           {
-            htmlDocuments."index.html" = h "html" [ ] |> toDocument;
+            htmlDocuments."index.html" = h "html" [ ] |> document;
           }
           |> bundle pkgs
           |> readFilesRecursive

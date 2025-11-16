@@ -10,7 +10,7 @@ let
 
   isVoidTag = tagName: spec.elements.${tagName}.void or false;
 
-  toDocument = content: {
+  document = content: {
     type = constants.document;
     inherit content;
   };
@@ -233,7 +233,7 @@ let
 in
 # public API
 {
-  inherit serialize toDocument bundle;
+  inherit serialize document bundle;
   inherit (ctors) raw;
   polymorphic = {
     element = ctors.polymorphic;

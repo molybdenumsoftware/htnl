@@ -1,6 +1,6 @@
 { htnl, lib, ... }:
 let
-  inherit (htnl) raw toDocument;
+  inherit (htnl) raw document;
   h = htnl.polymorphic.element;
 in
 {
@@ -14,7 +14,7 @@ in
       expected = "htnl-raw";
     };
     testDocument = {
-      expr = h "html" [ ] |> toDocument |> lib.getAttr "type";
+      expr = h "html" [ ] |> document |> lib.getAttr "type";
       expected = "htnl-document";
     };
   };
