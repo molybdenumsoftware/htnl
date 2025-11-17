@@ -15,28 +15,59 @@ let
     inherit content;
   };
 
-  # These return an arbitrarily nested list of string
-  serializers = {
-    document = ir: [
-      "<!DOCTYPE html>"
-      (serializers.element ir.content)
-    ];
+  processors = {
+    document =
+      ir:
+      let
+        contentResult = processors.element ir.content;
+      in
+      {
+        strings = [
+          "<!DOCTYPE html>"
+          contentResult.strings
+        ];
+        headings = contentResult.headings;
+      };
 
-    element = ir: [
-      "<"
-      ir.tagName
-      (lib.optionals (ir.attributes != { }) [
-        " "
-        (serializers.attributes ir.attributes)
-      ])
-      ">"
-      (lib.optionals (!isVoidTag ir.tagName) [
-        (serializers.fragment ir.children)
-        "</"
-        ir.tagName
-        ">"
-      ])
-    ];
+    element =
+      ir:
+      let
+        childrenResult = processors.fragment ir.children;
+        heading =
+          let
+            levelStr = lib.match "h([1-6])" ir.tagName |> lib.toList |> lib.head;
+            level = if levelStr == null then null else lib.toInt levelStr;
+          in
+          if level == null then
+            null
+          else
+            {
+              inherit level;
+              id = ir.attributes.id or null;
+              content = childrenResult.strings |> lib.flatten |> lib.concatStrings;
+            };
+      in
+      {
+        strings = [
+          "<"
+          ir.tagName
+          (lib.optionals (ir.attributes != { }) [
+            " "
+            (processors.attributes ir.attributes)
+          ])
+          ">"
+          (lib.optionals (!isVoidTag ir.tagName) [
+            childrenResult.strings
+            "</"
+            ir.tagName
+            ">"
+          ])
+        ];
+        headings = [
+          (lib.optional (heading != null) heading)
+          childrenResult.headings
+        ];
+      };
 
     attr = name: value: [
       name
@@ -47,14 +78,41 @@ let
       ])
     ];
 
-    attributes = attributes: attributes |> lib.mapAttrsToList serializers.attr |> lib.intersperse " ";
+    attributes = attributes: attributes |> lib.mapAttrsToList processors.attr |> lib.intersperse " ";
 
-    text = lib.escapeXML;
+    text = ir: {
+      strings = lib.escapeXML ir;
+      headings = [ ];
+    };
 
-    fragment = map serializers.unknown;
+    fragment =
+      ir:
+      ir
+      |>
+        lib.foldl
+          (
+            acc: child:
+            let
+              childResult = processors.unknown child;
+            in
+            {
+              strings = [
+                acc.strings
+                childResult.strings
+              ];
+              headings = [
+                acc.headings
+                childResult.headings
+              ];
+            }
+          )
+          {
+            strings = [ ];
+            headings = [ ];
+          };
 
     # no escaping
-    raw = ir: ir.content;
+    raw = ir: { strings = ir.content; };
 
     unknown =
       ir:
@@ -62,18 +120,18 @@ let
         type = lib.typeOf ir;
       in
       if type == "string" then
-        serializers.text ir
+        processors.text ir
       else if type == "list" then
-        serializers.fragment ir
+        processors.fragment ir
       else if type == "set" then
         if ir.type or null == constants.document then
-          serializers.document ir
+          processors.document ir
         else if ir.type or null == constants.element then
-          serializers.element ir
+          processors.element ir
         else if ir.type or null == constants.raw then
-          serializers.raw ir
+          processors.raw ir
         else
-          serializers.attributes ir
+          processors.attributes ir
       else
         throw "cannot serialize value (type: ${type})";
   };
@@ -177,7 +235,17 @@ let
         throw "not supported";
   };
 
-  serialize = ir: serializers.unknown ir |> lib.flatten |> lib.concatStrings;
+  process =
+    ir:
+    let
+      result = processors.unknown ir;
+    in
+    {
+      html = result.strings |> lib.flatten |> lib.concatStrings;
+      headings = lib.flatten result.headings;
+    };
+
+  serialize = ir: ir |> process |> lib.getAttr "html";
 
   bundle =
     pkgs:
@@ -233,7 +301,12 @@ let
 in
 # public API
 {
-  inherit serialize document bundle;
+  inherit
+    serialize
+    document
+    process
+    bundle
+    ;
   inherit (ctors) raw;
   polymorphic = {
     element = ctors.polymorphic;
