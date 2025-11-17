@@ -62,7 +62,7 @@ let
         type = lib.typeOf ir;
       in
       if type == "string" then
-        lib.escapeXML ir
+        serializers.text ir
       else if type == "list" then
         serializers.fragment ir
       else if type == "set" then
