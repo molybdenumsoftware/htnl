@@ -36,6 +36,7 @@
         );
 
       assetDrv = pkgs.writeText "file.txt" "some text";
+      assetPath = ./asset.txt;
 
       assertEq =
         actual: expected:
@@ -52,20 +53,13 @@
     in
     {
       checks = {
-        "tests:bundling:with-assets" =
+        "tests:bundling:assets:derivation" =
           {
             htmlDocuments = {
               "index.html" =
                 h "html" [
                   (h "body" [
-                    (h "a" { href = assetDrv; } "Download")
-                  ])
-                ]
-                |> document;
-              "blog/first-entry.html" =
-                h "html" [
-                  (h "body" [
-                    (h "a" { href = assetDrv; } "Download")
+                    (h "a" { href = assetDrv; } "Download derivation asset")
                   ])
                 ]
                 |> document;
@@ -76,10 +70,49 @@
           |> (
             actual:
             lib.seq (assertEq actual {
-              "index.html" = ''<!DOCTYPE html><html><body><a href="${assetDrv}">Download</a></body></html>'';
-              blog."first-entry.html" =
-                ''<!DOCTYPE html><html><body><a href="${assetDrv}">Download</a></body></html>'';
+              "index.html" =
+                [
+                  "<!DOCTYPE html>"
+                  "<html>"
+                  "<body>"
+                  ''<a href="${assetDrv}">Download derivation asset</a>''
+                  "</body>"
+                  "</html>"
+                ]
+                |> lib.concatStrings;
               nix.store.${assetDrv |> builtins.baseNameOf |> builtins.unsafeDiscardStringContext} = "some text";
+            }) (pkgs.writeText "" "")
+          );
+
+        "tests:bundling:assets:path" =
+          {
+            htmlDocuments = {
+              "index.html" =
+                h "html" [
+                  (h "body" [
+                    (h "a" { href = assetPath; } "Download path asset")
+                  ])
+                ]
+                |> document;
+            };
+          }
+          |> bundle pkgs
+          |> readFilesRecursive
+          |> (
+            actual:
+            lib.seq (assertEq actual {
+              "index.html" =
+                [
+                  "<!DOCTYPE html>"
+                  "<html>"
+                  "<body>"
+                  ''<a href="${assetPath}">Download path asset</a>''
+                  "</body>"
+                  "</html>"
+                ]
+                |> lib.concatStrings;
+              nix.store.${"${assetPath}" |> builtins.baseNameOf |> builtins.unsafeDiscardStringContext} =
+                "asset has content\n";
             }) (pkgs.writeText "" "")
           );
 
@@ -119,5 +152,7 @@
           |> bundle pkgs
           |> (actual: lib.seq (assertEq actual.name "some-name") (pkgs.writeText "" ""));
       };
+
+      treefmt.settings.global.excludes = [ "dev/modules/tests/bundling/asset.txt" ];
     };
 }

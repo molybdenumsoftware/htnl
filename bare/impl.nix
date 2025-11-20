@@ -71,9 +71,9 @@ let
 
     attr = name: value: [
       name
-      (lib.optionals (lib.isString value || lib.isDerivation value) [
+      (lib.optionals (lib.isStringLike value) [
         ''="''
-        (value |> toString |> lib.escapeXML)
+        ("${value}" |> lib.escapeXML)
         ''"''
       ])
     ];
@@ -161,7 +161,7 @@ let
       else if lib.isDerivation value then
         value
       else
-        assert lib.assertMsg (lib.isString value) "non-string attribute value";
+        assert lib.assertMsg (lib.isStringLike value) "non-string-like attribute value";
         value;
 
     children = tagName: map (validators.child tagName);
@@ -268,8 +268,11 @@ let
               |> lib.mapAttrs (
                 drvPath: _:
                 ''cp -r ${
-                  # This returns the `outPath` of the *.drv
-                  import drvPath
+                  if lib.hasSuffix ".drv" drvPath then
+                    # This returns the `outPath` of the *.drv
+                    import drvPath
+                  else
+                    drvPath
                 } "$out/nix/store"''
               );
           in

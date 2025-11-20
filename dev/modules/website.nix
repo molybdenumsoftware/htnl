@@ -129,7 +129,9 @@
                 ])
 
                 (pre { class = "overflow-scroll"; } (
-                  code { class = "language-nix"; } (rootPath + "/dev/modules/tests/bundling.nix" |> lib.readFile)
+                  code { class = "language-nix"; } (
+                    rootPath + "/dev/modules/tests/bundling/default.nix" |> lib.readFile
+                  )
                 ))
               ])
 
