@@ -35,7 +35,7 @@
             throw "unsupported file type `${fileType}`"
         );
 
-      file = pkgs.writeText "file.txt" "some text";
+      assetDrv = pkgs.writeText "file.txt" "some text";
 
       assertEq =
         actual: expected:
@@ -58,14 +58,14 @@
               "index.html" =
                 h "html" [
                   (h "body" [
-                    (h "a" { href = file; } "Download")
+                    (h "a" { href = assetDrv; } "Download")
                   ])
                 ]
                 |> document;
               "blog/first-entry.html" =
                 h "html" [
                   (h "body" [
-                    (h "a" { href = file; } "Download")
+                    (h "a" { href = assetDrv; } "Download")
                   ])
                 ]
                 |> document;
@@ -76,10 +76,10 @@
           |> (
             actual:
             lib.seq (assertEq actual {
-              "index.html" = ''<!DOCTYPE html><html><body><a href="${file}">Download</a></body></html>'';
+              "index.html" = ''<!DOCTYPE html><html><body><a href="${assetDrv}">Download</a></body></html>'';
               blog."first-entry.html" =
-                ''<!DOCTYPE html><html><body><a href="${file}">Download</a></body></html>'';
-              nix.store.${file |> builtins.baseNameOf |> builtins.unsafeDiscardStringContext} = "some text";
+                ''<!DOCTYPE html><html><body><a href="${assetDrv}">Download</a></body></html>'';
+              nix.store.${assetDrv |> builtins.baseNameOf |> builtins.unsafeDiscardStringContext} = "some text";
             }) (pkgs.writeText "" "")
           );
 
