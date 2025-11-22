@@ -88,6 +88,39 @@
             }) (pkgs.writeText "" "")
           );
 
+        "tests:bundling:assets:same-drv-multiple-positions" =
+          {
+            htmlDocuments = {
+              "index.html" =
+                h "html" [
+                  (h "body" [
+                    (h "a" { href = assetDrv; } "Download derivation asset")
+                    (h "a" { href = assetDrv; } "Download same derivation asset")
+                  ])
+                ]
+                |> document;
+            };
+          }
+          |> bundle pkgs
+          |> readFilesRecursive
+          |> (
+            actual:
+            lib.seq (assertEq actual {
+              "/index.html" =
+                [
+                  "<!DOCTYPE html>"
+                  "<html>"
+                  "<body>"
+                  ''<a href="${assetDrv}">Download derivation asset</a>''
+                  ''<a href="${assetDrv}">Download same derivation asset</a>''
+                  "</body>"
+                  "</html>"
+                ]
+                |> lib.concatStrings;
+              ${builtins.unsafeDiscardStringContext assetDrv} = "some text";
+            }) (pkgs.writeText "" "")
+          );
+
         "tests:bundling:empty" =
           {
             htmlDocuments = { };
