@@ -30,7 +30,7 @@
           |> (
             actual:
             lib.seq (assertEq actual {
-              "index.html" =
+              "/index.html" =
                 [
                   "<!DOCTYPE html>"
                   "<html>"
@@ -40,7 +40,7 @@
                   "</html>"
                 ]
                 |> lib.concatStrings;
-              nix.store.${assetDrv |> builtins.baseNameOf |> builtins.unsafeDiscardStringContext} = "some text";
+              ${builtins.unsafeDiscardStringContext assetDrv} = "some text";
             }) (pkgs.writeText "" "")
           );
 
@@ -61,7 +61,7 @@
           |> (
             actual:
             lib.seq (assertEq actual {
-              "index.html" =
+              "/index.html" =
                 [
                   "<!DOCTYPE html>"
                   "<html>"
@@ -71,8 +71,7 @@
                   "</html>"
                 ]
                 |> lib.concatStrings;
-              nix.store.${"${assetPath}" |> builtins.baseNameOf |> builtins.unsafeDiscardStringContext} =
-                "asset has content\n";
+              ${builtins.unsafeDiscardStringContext assetPath} = "asset has content\n";
             }) (pkgs.writeText "" "")
           );
 
@@ -85,7 +84,7 @@
           |> (
             actual:
             lib.seq (assertEq actual {
-              "index.html" = "<!DOCTYPE html><html></html>";
+              "/index.html" = "<!DOCTYPE html><html></html>";
             }) (pkgs.writeText "" "")
           );
 

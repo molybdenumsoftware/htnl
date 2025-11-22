@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ lib, ... }:
 {
   options.utils = {
     assertEq = lib.mkOption {
@@ -30,25 +30,41 @@
         }
         ```
       '';
+
       default =
-        path:
-        builtins.readDir path
-        |> lib.mapAttrs (
-          fileName: fileType:
-          let
-            filePath = lib.concatStrings [
-              path
+        rootDir:
+        let
+          recurse =
+            relDir:
+            lib.concatStrings [
+              rootDir
               "/"
-              fileName
-            ];
-          in
-          if fileType == "directory" then
-            config.utils.readFilesRecursive filePath
-          else if fileType == "regular" then
-            builtins.readFile filePath
-          else
-            throw "unsupported file type `${fileType}`"
-        );
+              relDir
+            ]
+            |> builtins.readDir
+            |> lib.concatMapAttrs (
+              fileName: fileType:
+              let
+                relPath = "${relDir}/${fileName}";
+              in
+              if fileType == "regular" then
+                {
+                  ${relPath} =
+                    [
+                      rootDir
+                      "/"
+                      relPath
+                    ]
+                    |> lib.concatStrings
+                    |> builtins.readFile;
+                }
+              else if fileType == "directory" then
+                recurse relPath
+              else
+                throw "unsupported file type `${fileType}`"
+            );
+        in
+        recurse "";
     };
   };
 }
