@@ -6,50 +6,10 @@
     { pkgs, ... }:
     let
       inherit (config.lib) document bundle;
+      inherit (config.utils) assertEq readFilesRecursive;
       h = config.lib.polymorphic.element;
-
-      # Example output:
-      # ```
-      # {
-      #   "a.txt" = "content";
-      #   b."c.txt" = "other content"
-      # }
-      # ```
-      readFilesRecursive =
-        path:
-        builtins.readDir path
-        |> lib.mapAttrs (
-          fileName: fileType:
-          let
-            filePath = lib.concatStrings [
-              path
-              "/"
-              fileName
-            ];
-          in
-          if fileType == "directory" then
-            readFilesRecursive filePath
-          else if fileType == "regular" then
-            builtins.readFile filePath
-          else
-            throw "unsupported file type `${fileType}`"
-        );
-
       assetDrv = pkgs.writeText "file.txt" "some text";
       assetPath = ./asset.txt;
-
-      assertEq =
-        actual: expected:
-        if actual == expected then
-          actual
-        else
-          [
-            "  `actual`:"
-            actual
-            "  `expected`"
-            expected
-          ]
-          |> lib.foldr lib.trace (throw "Assertion failed. Assertion: `actual == expected`");
     in
     {
       checks = {
