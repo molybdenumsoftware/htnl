@@ -26,7 +26,7 @@ let
           "<!DOCTYPE html>"
           contentResult.strings
         ];
-        headings = contentResult.headings;
+        inherit (contentResult) headings assets;
       };
 
     element =
@@ -46,15 +46,13 @@ let
               id = ir.attributes.id or null;
               content = childrenResult.strings |> lib.flatten |> lib.concatStrings;
             };
+        attributesResult = processors.attributes ir.attributes;
       in
       {
         strings = [
           "<"
           ir.tagName
-          (lib.optionals (ir.attributes != { }) [
-            " "
-            (processors.attributes ir.attributes)
-          ])
+          (lib.optional (ir.attributes != { }) attributesResult.strings)
           ">"
           (lib.optionals (!isVoidTag ir.tagName) [
             childrenResult.strings
@@ -67,22 +65,58 @@ let
           (lib.optional (heading != null) heading)
           childrenResult.headings
         ];
+        assets = attributesResult.assets // childrenResult.assets;
       };
 
-    attr = name: value: [
-      name
-      (lib.optionals (lib.isStringLike value) [
-        ''="''
-        ("${value}" |> lib.escapeXML)
-        ''"''
-      ])
-    ];
+    attr =
+      name: value:
+      let
+        isStoreObject = lib.isPath value || lib.isDerivation value || value ? outPath;
+      in
+      {
+        strings = [
+          name
+          (lib.optionals (isStoreObject || lib.isString value) [
+            ''="''
+            ("${value}" |> lib.escapeXML)
+            ''"''
+          ])
+        ];
+        assets = lib.optionalAttrs isStoreObject {
+          ${value |> toString |> builtins.unsafeDiscardStringContext} = value;
+        };
+      };
 
-    attributes = attributes: attributes |> lib.mapAttrsToList processors.attr |> lib.intersperse " ";
+    attributes =
+      attributes:
+      attributes
+      |> lib.attrsToList
+      |>
+        lib.foldl
+          (
+            acc:
+            { name, value }:
+            let
+              processedAttr = processors.attr name value;
+            in
+            {
+              strings = [
+                acc.strings
+                " "
+                processedAttr.strings
+              ];
+              assets = acc.assets // processedAttr.assets;
+            }
+          )
+          {
+            strings = [ ];
+            assets = { };
+          };
 
     text = ir: {
       strings = lib.escapeXML ir;
       headings = [ ];
+      assets = { };
     };
 
     fragment =
@@ -104,15 +138,20 @@ let
                 acc.headings
                 childResult.headings
               ];
+              assets = acc.assets // childResult.assets;
             }
           )
           {
             strings = [ ];
             headings = [ ];
+            assets = { };
           };
 
-    # no escaping
-    raw = ir: { strings = ir.content; };
+    raw = ir: {
+
+      strings = ir.content; # no escaping
+      assets = { };
+    };
 
     unknown =
       ir:
@@ -241,6 +280,7 @@ let
       result = processors.unknown ir;
     in
     {
+      inherit (result) assets;
       html = result.strings |> lib.flatten |> lib.concatStrings;
       headings = lib.flatten result.headings;
     };
@@ -260,34 +300,23 @@ let
         (
           acc: htmlDocumentPath: htmlDocument:
           let
-            htmlString = serialize htmlDocument;
+            inherit (process htmlDocument) html assets;
 
             documentAssetLines =
-              htmlString
-              |> builtins.getContext
-              |> lib.mapAttrs (
-                drvPath: _:
-                ''cp -r ${
-                  if lib.hasSuffix ".drv" drvPath then
-                    # This returns the `outPath` of the *.drv
-                    import drvPath
-                  else
-                    drvPath
-                } "$out/nix/store"''
-              );
+              assets |> lib.mapAttrsToList (storePath: asset: ''cp -r ${asset} "$out/nix/store"'');
           in
           {
             htmlFileLines = lib.concat acc.htmlFileLines [
               ''mkdir -p "$out/${builtins.dirOf htmlDocumentPath}"''
-              ''echo -n ${lib.escapeShellArg htmlString} > "$out/${htmlDocumentPath}"''
+              ''echo -n ${lib.escapeShellArg html} > "$out/${htmlDocumentPath}"''
             ];
 
-            assetLines = acc.assetLines // documentAssetLines;
+            assetLines = acc.assetLines ++ documentAssetLines;
           }
         )
         {
           htmlFileLines = [ ];
-          assetLines = { };
+          assetLines = [ ];
         }
     |> (
       { htmlFileLines, assetLines }:
@@ -295,7 +324,7 @@ let
         htmlFileLines
         ''mkdir -p "$out"'' # support empty bundles
         (lib.optionalString (assetLines != { }) ''mkdir -p "$out/nix/store"'')
-        (lib.attrValues assetLines)
+        assetLines
       ]
     )
     |> lib.flatten
@@ -307,9 +336,11 @@ in
   inherit
     serialize
     document
-    process
     bundle
     ;
+
+  process = ir: { inherit (process ir) html headings; };
+
   inherit (ctors) raw;
   polymorphic = {
     element = ctors.polymorphic;
