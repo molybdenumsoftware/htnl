@@ -1,5 +1,17 @@
 {
   "nodes": {
+    "asset-for-testing": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-TJCoKudQc6ZzfDSZH9YqhuLMHms2Eu13ZcwGIbJ3MgA=",
+        "type": "file",
+        "url": "http://httpbin.org/robots.txt"
+      },
+      "original": {
+        "type": "file",
+        "url": "http://httpbin.org/robots.txt"
+      }
+    },
     "dedupe_flake-compat": {
       "locked": {
         "lastModified": 1761588595,
@@ -161,6 +173,7 @@
     },
     "root": {
       "inputs": {
+        "asset-for-testing": "asset-for-testing",
         "dedupe_flake-compat": "dedupe_flake-compat",
         "files": "files",
         "git-hooks": "git-hooks",

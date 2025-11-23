@@ -1,6 +1,11 @@
 # Bundling tests, a flake-parts module
 
-{ lib, config, ... }:
+{
+  lib,
+  config,
+  inputs,
+  ...
+}:
 {
   perSystem =
     { pkgs, ... }:
@@ -10,6 +15,7 @@
       h = config.lib.polymorphic.element;
       assetDrv = pkgs.writeText "file.txt" "some text";
       assetPath = ./asset.txt;
+      assetFlakeInput = inputs.asset-for-testing;
     in
     {
       checks = {
@@ -72,6 +78,40 @@
                 ]
                 |> lib.concatStrings;
               ${builtins.unsafeDiscardStringContext assetPath} = "asset has content\n";
+            }) (pkgs.writeText "" "")
+          );
+
+        "tests:bundling:assets:flake-input" =
+          {
+            htmlDocuments = {
+              "index.html" =
+                h "html" [
+                  (h "body" [
+                    (h "a" { href = assetFlakeInput; } "Download flake input asset")
+                  ])
+                ]
+                |> document;
+            };
+          }
+          |> bundle pkgs
+          |> readFilesRecursive
+          |> (
+            actual:
+            lib.seq (assertEq actual {
+              "/index.html" =
+                [
+                  "<!DOCTYPE html>"
+                  "<html>"
+                  "<body>"
+                  ''<a href="${assetFlakeInput}">Download flake input asset</a>''
+                  "</body>"
+                  "</html>"
+                ]
+                |> lib.concatStrings;
+              ${builtins.unsafeDiscardStringContext assetFlakeInput} = ''
+                User-agent: *
+                Disallow: /deny
+              '';
             }) (pkgs.writeText "" "")
           );
 

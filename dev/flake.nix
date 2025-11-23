@@ -1,5 +1,9 @@
 {
   inputs = {
+    asset-for-testing = {
+      flake = false;
+      url = "http://httpbin.org/robots.txt";
+    };
 
     files.url = "github:mightyiam/files";
 
