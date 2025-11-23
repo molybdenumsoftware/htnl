@@ -68,7 +68,7 @@ let
         assets = attributesResult.assets // childrenResult.assets;
       };
 
-    attr =
+    attribute =
       name: value:
       let
         isStoreObject = lib.isPath value || lib.isDerivation value || value ? outPath;
@@ -97,7 +97,7 @@ let
             acc:
             { name, value }:
             let
-              processedAttr = processors.attr name value;
+              processedAttr = processors.attribute name value;
             in
             {
               strings = [
