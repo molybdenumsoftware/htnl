@@ -303,30 +303,17 @@ let
             inherit (process htmlDocument) html assets;
 
             documentAssetLines =
-              assets |> lib.mapAttrsToList (storePath: asset: ''cp -r ${asset} "$out/nix/store"'');
+              assets |> lib.mapAttrsToList (storePath: asset: ''cp --parents -r ${asset} "$out"'');
           in
-          {
-            htmlFileLines = lib.concat acc.htmlFileLines [
-              ''mkdir -p "$out/${builtins.dirOf htmlDocumentPath}"''
-              ''echo -n ${lib.escapeShellArg html} > "$out/${htmlDocumentPath}"''
-            ];
-
-            assetLines = acc.assetLines ++ documentAssetLines;
-          }
+          [
+            acc
+            ''mkdir -p "$out/${builtins.dirOf htmlDocumentPath}"''
+            ''echo -n ${lib.escapeShellArg html} > "$out/${htmlDocumentPath}"''
+            documentAssetLines
+          ]
         )
-        {
-          htmlFileLines = [ ];
-          assetLines = [ ];
-        }
-    |> (
-      { htmlFileLines, assetLines }:
-      [
-        htmlFileLines
-        ''mkdir -p "$out"'' # support empty bundles
-        (lib.optionalString (assetLines != { }) ''mkdir -p "$out/nix/store"'')
-        assetLines
-      ]
-    )
+        # support empty bundles
+        [ ''mkdir -p "$out"'' ]
     |> lib.flatten
     |> lib.concatLines
     |> pkgs.runCommand name { };
