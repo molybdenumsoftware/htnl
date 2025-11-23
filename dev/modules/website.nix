@@ -55,16 +55,23 @@
               href = inputs.highlightjs-stylesheet |> lib.readFile |> pkgs.writeText "highlightjs.css";
             })
 
-            (script { type = "module"; } (raw
-            # js
-            ''
-              import hljs from '${
-                inputs.highlightjs-esmodule |> lib.readFile |> pkgs.writeText "highlightjs.js"
-              }';
-              import nix from '${inputs.highlightjs-nix |> lib.readFile |> pkgs.writeText "highlightjs-nix.js"}';
-              hljs.registerLanguage('nix', nix);
-              hljs.highlightAll()
-            ''))
+            (script { type = "module"; } (
+              raw
+                {
+                  highlightjs-esmodule =
+                    inputs.highlightjs-esmodule |> lib.readFile |> pkgs.writeText "highlightjs.js";
+                  highlightjs-nix = inputs.highlightjs-nix |> lib.readFile |> pkgs.writeText "highlightjs-nix.js";
+                }
+                (
+                  { highlightjs-esmodule, highlightjs-nix }: # js
+                  ''
+                    import hljs from '${highlightjs-esmodule}';
+                    import nix from '${highlightjs-nix}';
+                    hljs.registerLanguage('nix', nix);
+                    hljs.highlightAll()
+                  ''
+                )
+            ))
           ])
           (body
             {
@@ -88,17 +95,21 @@
                 (p "It's tedious. It's unsafe. Stop it.")
                 (p "we are Nixers, we can make things. here is a library for declaring HTML.")
               ])
-              (
-                [
-                  ''<svg role="img">''
-                  ''<title>${config.metadata.title}</title>''
-                  ''<use href="${
-                    rootPath + "/dev/modules/graphics/inkscape.svg" |> lib.readFile |> pkgs.writeText "graphics.svg"
-                  }#content"></use>''
-                  ''</svg>''
-                ]
-                |> lib.concatStrings
-                |> raw
+              (raw
+                {
+                  graphicsSvg =
+                    rootPath + "/dev/modules/graphics/inkscape.svg" |> lib.readFile |> pkgs.writeText "graphics.svg";
+                }
+                (
+                  { graphicsSvg }:
+                  [
+                    ''<svg role="img">''
+                    ''<title>${config.metadata.title}</title>''
+                    ''<use href="${graphicsSvg}#content"></use>''
+                    ''</svg>''
+                  ]
+                  |> lib.concatStrings
+                )
               )
 
               (

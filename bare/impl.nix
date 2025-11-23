@@ -147,11 +147,22 @@ let
             assets = { };
           };
 
-    raw = ir: {
-
-      strings = ir.content; # no escaping
-      assets = { };
-    };
+    raw =
+      ir:
+      let
+        html =
+          ir.assets
+          |> lib.mapAttrs (name: asset: "${asset}" |> builtins.unsafeDiscardStringContext)
+          |> ir.template;
+      in
+      {
+        strings =
+          if builtins.getContext html == { } then
+            lib.singleton html
+          else
+            throw "`raw` string must have zero context; see documentation.";
+        inherit (ir) assets;
+      };
 
     unknown =
       ir:
@@ -223,12 +234,48 @@ let
 
   ctors = {
     raw =
+      arg:
+      if lib.isString arg then
+        {
+          type = constants.raw;
+          assets = { };
+          template = _: arg;
+        }
+      else if lib.isAttrs arg then
+        if
+          arg
+          |> lib.attrValues
+          |> lib.all (
+            asset:
+            lib.any (pred: pred asset) [
+              lib.isDerivation
+              lib.isPath
+              (asset: lib.isAttrs asset && lib.hasAttr "outPath" asset)
+            ]
+          )
+        then
+          template:
+          if lib.isFunction template then
+            {
+              type = constants.raw;
+              assets = arg;
+              inherit template;
+            }
+          else
+            throw "second argument to `raw` must be a function"
+        else
+          throw "`raw` received invalid asset"
+      else
+        throw "first argument to `raw` must be string or attrset";
+
+    raw_ =
       content:
       assert lib.assertMsg (lib.isString content) "raw called with non-string";
       {
         type = constants.raw;
         inherit content;
       };
+
     monomorphic =
       tagName_: attributes_: children_:
       let

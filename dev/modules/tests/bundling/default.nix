@@ -10,7 +10,7 @@
   perSystem =
     { pkgs, ... }:
     let
-      inherit (config.lib) document bundle;
+      inherit (config.lib) document bundle raw;
       inherit (config.utils) assertEq readFilesRecursive;
       h = config.lib.polymorphic.element;
       assetDrv = pkgs.writeText "file.txt" "some text";
@@ -108,6 +108,65 @@
                   "</html>"
                 ]
                 |> lib.concatStrings;
+              ${builtins.unsafeDiscardStringContext assetFlakeInput} = ''
+                User-agent: *
+                Disallow: /deny
+              '';
+            }) (pkgs.writeText "" "")
+          );
+
+        "tests:bundling:assets:in-raw" =
+          {
+            htmlDocuments = {
+              "index.html" =
+                h "html" [
+                  (h "head" [
+                    (h "script" (
+                      raw { inherit assetDrv assetPath assetFlakeInput; } (
+                        {
+                          assetDrv,
+                          assetPath,
+                          assetFlakeInput,
+                        }:
+                        ''
+                          console.log({
+                            drv: '${assetDrv}',
+                            path: '${assetPath}',
+                            flakeInput: '${assetFlakeInput}',
+                          })
+                        ''
+                      )
+                    ))
+                  ])
+                ]
+                |> document;
+            };
+          }
+          |> bundle pkgs
+          |> readFilesRecursive
+          |> (
+            actual:
+            lib.seq (assertEq actual {
+              "/index.html" =
+                [
+                  "<!DOCTYPE html>"
+                  "<html>"
+                  "<head>"
+                  "<script>"
+                  ''
+                    console.log({
+                      drv: '${assetDrv}',
+                      path: '${assetPath}',
+                      flakeInput: '${assetFlakeInput}',
+                    })
+                  ''
+                  "</script>"
+                  "</head>"
+                  "</html>"
+                ]
+                |> lib.concatStrings;
+              ${builtins.unsafeDiscardStringContext assetDrv} = "some text";
+              ${builtins.unsafeDiscardStringContext assetPath} = "asset has content\n";
               ${builtins.unsafeDiscardStringContext assetFlakeInput} = ''
                 User-agent: *
                 Disallow: /deny

@@ -9,7 +9,7 @@ in
     expr = raw 0;
     expectedError = {
       type = "ThrownError";
-      msg = "raw called with non-string";
+      msg = "first argument to `raw` must be string or attrset";
     };
   };
   testSingle = {
@@ -24,5 +24,26 @@ in
       ]
       |> serialize;
     expected = "<div> <  & </div>";
+  };
+  testHasContext = {
+    expr = raw ''${./raw.nix}'' |> serialize;
+    expectedError = {
+      type = "ThrownError";
+      msg = "`raw` string must have zero context; see documentation.";
+    };
+  };
+  testInvalidAsset = {
+    expr = raw { invalid = "string"; } (assets: assets.invalid) |> serialize;
+    expectedError = {
+      type = "ThrownError";
+      msg = "`raw` received invalid asset";
+    };
+  };
+  testNonFunctionSecondArg = {
+    expr = raw { } "";
+    expectedError = {
+      type = "ThrownError";
+      msg = "second argument to `raw` must be a function";
+    };
   };
 }
