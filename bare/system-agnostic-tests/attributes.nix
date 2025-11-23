@@ -25,6 +25,16 @@ in
     };
   };
 
+  testMultiple = {
+    expr =
+      h "img" {
+        src = "photo.jpg";
+        alt = "Photograph";
+      }
+      |> serialize;
+    expected = ''<img alt="Photograph" src="photo.jpg">'';
+  };
+
   boolean = {
     testNonTrue = {
       expr = h "br" { inert = false; };
