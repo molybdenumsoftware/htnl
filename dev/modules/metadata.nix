@@ -12,16 +12,19 @@
       description = {
         plaintext = lib.mkOption {
           type = lib.types.singleLineStr;
-          default = "Nix library for declaring and bundling HTML";
+          default = "Nix library for making websites";
         };
         ir = lib.mkOption {
           type = lib.types.unspecified;
           default = p { } [
             (a { href = "https://nix.dev/tutorials/nix-language"; } "Nix")
-            " library for declaring and bundling "
-            (a { href = "https://html.spec.whatwg.org"; } "HTML")
+            " library for making websites"
           ];
         };
+      };
+      slogan = lib.mkOption {
+        type = lib.types.singleLineStr;
+        default = "Rebuild the web";
       };
       website.url = lib.mkOption {
         type = lib.types.singleLineStr;

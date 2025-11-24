@@ -1,3 +1,3 @@
 {
-  perSystem.treefmt.settings.global.excludes = [ "dev/modules/graphics/inkscape.svg" ];
+  perSystem.treefmt.programs.xmllint.enable = true;
 }

@@ -93,25 +93,9 @@
                   (em "admit it.")
                 ])
                 (p "It's tedious. It's unsafe. Stop it.")
-                (p "we are Nixers, we can make things. here is a library for declaring HTML.")
+                (p "we are Nixers, we can make things. here is a ${config.metadata.description.plaintext}.")
               ])
-              (raw
-                {
-                  graphicsSvg =
-                    rootPath + "/dev/modules/graphics/inkscape.svg" |> lib.readFile |> pkgs.writeText "graphics.svg";
-                }
-                (
-                  { graphicsSvg }:
-                  [
-                    ''<svg role="img">''
-                    ''<title>${config.metadata.title}</title>''
-                    ''<use href="${graphicsSvg}#content"></use>''
-                    ''</svg>''
-                  ]
-                  |> lib.concatStrings
-                )
-              )
-
+              (rootPath + "/dev/modules/graphics/logo.svg" |> lib.readFile |> raw)
               (
                 let
                   dir = rootPath + "/bare/system-agnostic-tests";
