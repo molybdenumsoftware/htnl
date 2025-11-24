@@ -1,1 +1,1 @@
-<h1>htnl</h1><p><a href="https://nix.dev/tutorials/nix-language">Nix</a> library for declaring and bundling <a href="https://html.spec.whatwg.org">HTML</a></p><p><a href="https://htnl.molybdenum.software/"><code>https://htnl.molybdenum.software/</code></a></p>
+<h1>htnl</h1><p><a href="https://nix.dev/tutorials/nix-language">Nix</a> library for making websites</p><p><a href="https://htnl.molybdenum.software/"><code>https://htnl.molybdenum.software/</code></a></p>
