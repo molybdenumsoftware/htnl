@@ -78,7 +78,7 @@ let
           name
           (lib.optionals (isStoreObject || lib.isString value) [
             ''="''
-            (value |> builtins.unsafeDiscardStringContext |> lib.escapeXML)
+            ((if isStoreObject then processors.storeObject value else value) |> lib.escapeXML)
             ''"''
           ])
         ];
@@ -86,6 +86,8 @@ let
           ${value |> builtins.unsafeDiscardStringContext} = value;
         };
       };
+
+    storeObject = builtins.unsafeDiscardStringContext;
 
     attributes =
       attributes:
@@ -150,7 +152,7 @@ let
     raw =
       ir:
       let
-        html = ir.assets |> lib.mapAttrs (name: builtins.unsafeDiscardStringContext) |> ir.template;
+        html = ir.assets |> lib.mapAttrs (name: processors.storeObject) |> ir.template;
       in
       {
         strings = lib.singleton html;
