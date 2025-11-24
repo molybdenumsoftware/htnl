@@ -151,190 +151,195 @@ let
   };
 
   process =
-    ir:
+    arg:
     let
-      processors = {
-        document =
-          ir:
-          let
-            contentResult = processors.element ir.content;
-          in
-          {
-            strings = [
-              "<!DOCTYPE html>"
-              contentResult.strings
-            ];
-            inherit (contentResult) headings assets;
-          };
-
-        element =
-          ir:
-          let
-            childrenResult = processors.fragment ir.children;
-            heading =
+      monomorphic =
+        configuration: ir:
+        let
+          processors = {
+            document =
+              ir:
               let
-                levelStr = lib.match "h([1-6])" ir.tagName |> lib.toList |> lib.head;
-                level = if levelStr == null then null else lib.toInt levelStr;
+                contentResult = processors.element ir.content;
               in
-              if level == null then
-                null
-              else
-                {
-                  inherit level;
-                  id = ir.attributes.id or null;
-                  content = childrenResult.strings |> lib.flatten |> lib.concatStrings;
+              {
+                strings = [
+                  "<!DOCTYPE html>"
+                  contentResult.strings
+                ];
+                inherit (contentResult) headings assets;
+              };
+
+            element =
+              ir:
+              let
+                childrenResult = processors.fragment ir.children;
+                heading =
+                  let
+                    levelStr = lib.match "h([1-6])" ir.tagName |> lib.toList |> lib.head;
+                    level = if levelStr == null then null else lib.toInt levelStr;
+                  in
+                  if level == null then
+                    null
+                  else
+                    {
+                      inherit level;
+                      id = ir.attributes.id or null;
+                      content = childrenResult.strings |> lib.flatten |> lib.concatStrings;
+                    };
+                attributesResult = processors.attributes ir.attributes;
+              in
+              {
+                strings = [
+                  "<"
+                  ir.tagName
+                  (lib.optional (ir.attributes != { }) attributesResult.strings)
+                  ">"
+                  (lib.optionals (!isVoidTag ir.tagName) [
+                    childrenResult.strings
+                    "</"
+                    ir.tagName
+                    ">"
+                  ])
+                ];
+                headings = [
+                  (lib.optional (heading != null) heading)
+                  childrenResult.headings
+                ];
+                assets = attributesResult.assets // childrenResult.assets;
+              };
+
+            attribute =
+              name: value:
+              let
+                isStoreObject = lib.isPath value || lib.isDerivation value || value ? outPath;
+              in
+              {
+                strings = [
+                  name
+                  (lib.optionals (isStoreObject || lib.isString value) [
+                    ''="''
+                    ((if isStoreObject then processors.storeObject value else value) |> lib.escapeXML)
+                    ''"''
+                  ])
+                ];
+                assets = lib.optionalAttrs isStoreObject {
+                  ${value |> builtins.unsafeDiscardStringContext} = value;
                 };
-            attributesResult = processors.attributes ir.attributes;
-          in
-          {
-            strings = [
-              "<"
-              ir.tagName
-              (lib.optional (ir.attributes != { }) attributesResult.strings)
-              ">"
-              (lib.optionals (!isVoidTag ir.tagName) [
-                childrenResult.strings
-                "</"
-                ir.tagName
-                ">"
-              ])
-            ];
-            headings = [
-              (lib.optional (heading != null) heading)
-              childrenResult.headings
-            ];
-            assets = attributesResult.assets // childrenResult.assets;
-          };
+              };
 
-        attribute =
-          name: value:
-          let
-            isStoreObject = lib.isPath value || lib.isDerivation value || value ? outPath;
-          in
-          {
-            strings = [
-              name
-              (lib.optionals (isStoreObject || lib.isString value) [
-                ''="''
-                ((if isStoreObject then processors.storeObject value else value) |> lib.escapeXML)
-                ''"''
-              ])
-            ];
-            assets = lib.optionalAttrs isStoreObject {
-              ${value |> builtins.unsafeDiscardStringContext} = value;
+            storeObject = builtins.unsafeDiscardStringContext;
+
+            attributes =
+              attributes:
+              attributes
+              |> lib.attrsToList
+              |>
+                lib.foldl
+                  (
+                    acc:
+                    { name, value }:
+                    let
+                      processedAttr = processors.attribute name value;
+                    in
+                    {
+                      strings = [
+                        acc.strings
+                        " "
+                        processedAttr.strings
+                      ];
+                      assets = acc.assets // processedAttr.assets;
+                    }
+                  )
+                  {
+                    strings = [ ];
+                    assets = { };
+                  };
+
+            text = ir: {
+              strings = lib.escapeXML ir;
+              headings = [ ];
+              assets = { };
             };
-          };
 
-        storeObject = builtins.unsafeDiscardStringContext;
+            fragment =
+              ir:
+              ir
+              |>
+                lib.foldl
+                  (
+                    acc: child:
+                    let
+                      childResult = processors.unknown child;
+                    in
+                    {
+                      strings = [
+                        acc.strings
+                        childResult.strings
+                      ];
+                      headings = [
+                        acc.headings
+                        childResult.headings
+                      ];
+                      assets = acc.assets // childResult.assets;
+                    }
+                  )
+                  {
+                    strings = [ ];
+                    headings = [ ];
+                    assets = { };
+                  };
 
-        attributes =
-          attributes:
-          attributes
-          |> lib.attrsToList
-          |>
-            lib.foldl
-              (
-                acc:
-                { name, value }:
-                let
-                  processedAttr = processors.attribute name value;
-                in
-                {
-                  strings = [
-                    acc.strings
-                    " "
-                    processedAttr.strings
-                  ];
-                  assets = acc.assets // processedAttr.assets;
-                }
-              )
+            raw =
+              ir:
+              let
+                html = ir.assets |> lib.mapAttrs (name: processors.storeObject) |> ir.template;
+              in
               {
-                strings = [ ];
-                assets = { };
+                strings = lib.singleton html;
+                assets =
+                  ir.assets
+                  |> lib.mapAttrs' (
+                    attrName: value: {
+                      name = builtins.unsafeDiscardStringContext value;
+                      inherit value;
+                    }
+                  );
               };
 
-        text = ir: {
-          strings = lib.escapeXML ir;
-          headings = [ ];
-          assets = { };
+            unknown =
+              ir:
+              let
+                type = lib.typeOf ir;
+              in
+              if type == "string" then
+                processors.text ir
+              else if type == "list" then
+                processors.fragment ir
+              else if type == "set" then
+                if ir.type or null == constants.document then
+                  processors.document ir
+                else if ir.type or null == constants.element then
+                  processors.element ir
+                else if ir.type or null == constants.raw then
+                  processors.raw ir
+                else
+                  processors.attributes ir
+              else
+                throw "cannot serialize value (type: ${type})";
+          };
+
+          result = processors.unknown ir;
+          html = result.strings |> lib.flatten |> lib.concatStrings;
+          context = builtins.getContext html;
+        in
+        {
+          inherit (result) assets;
+          html = if context == { } then html else lib.trace context (throw "non-asset context detected");
+          headings = lib.flatten result.headings;
         };
-
-        fragment =
-          ir:
-          ir
-          |>
-            lib.foldl
-              (
-                acc: child:
-                let
-                  childResult = processors.unknown child;
-                in
-                {
-                  strings = [
-                    acc.strings
-                    childResult.strings
-                  ];
-                  headings = [
-                    acc.headings
-                    childResult.headings
-                  ];
-                  assets = acc.assets // childResult.assets;
-                }
-              )
-              {
-                strings = [ ];
-                headings = [ ];
-                assets = { };
-              };
-
-        raw =
-          ir:
-          let
-            html = ir.assets |> lib.mapAttrs (name: processors.storeObject) |> ir.template;
-          in
-          {
-            strings = lib.singleton html;
-            assets =
-              ir.assets
-              |> lib.mapAttrs' (
-                attrName: value: {
-                  name = builtins.unsafeDiscardStringContext value;
-                  inherit value;
-                }
-              );
-          };
-
-        unknown =
-          ir:
-          let
-            type = lib.typeOf ir;
-          in
-          if type == "string" then
-            processors.text ir
-          else if type == "list" then
-            processors.fragment ir
-          else if type == "set" then
-            if ir.type or null == constants.document then
-              processors.document ir
-            else if ir.type or null == constants.element then
-              processors.element ir
-            else if ir.type or null == constants.raw then
-              processors.raw ir
-            else
-              processors.attributes ir
-          else
-            throw "cannot serialize value (type: ${type})";
-      };
-
-      result = processors.unknown ir;
-      html = result.strings |> lib.flatten |> lib.concatStrings;
-      context = builtins.getContext html;
     in
-    {
-      inherit (result) assets;
-      html = if context == { } then html else lib.trace context (throw "non-asset context detected");
-      headings = lib.flatten result.headings;
-    };
+    if lib.isAttrs arg && !arg ? type then monomorphic arg else monomorphic { } arg;
 
   serialize = ir: ir |> process |> lib.getAttr "html";
 
