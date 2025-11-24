@@ -154,7 +154,10 @@ let
     arg:
     let
       monomorphic =
-        configuration: ir:
+        {
+          basePath ? "/",
+        }:
+        ir:
         let
           processors = {
             document =
@@ -219,7 +222,7 @@ let
                   name
                   (lib.optionals (isStoreObject || lib.isString value) [
                     ''="''
-                    ((if isStoreObject then processors.storeObject value else value) |> lib.escapeXML)
+                    (if isStoreObject then processors.storeObject value else value |> lib.escapeXML)
                     ''"''
                   ])
                 ];
@@ -228,7 +231,13 @@ let
                 };
               };
 
-            storeObject = builtins.unsafeDiscardStringContext;
+            storeObject =
+              so:
+              so
+              |> builtins.unsafeDiscardStringContext
+              |> lib.removePrefix "/"
+              |> lib.singleton
+              |> lib.concat [ basePath ];
 
             attributes =
               attributes:
@@ -293,7 +302,10 @@ let
             raw =
               ir:
               let
-                html = ir.assets |> lib.mapAttrs (name: processors.storeObject) |> ir.template;
+                html =
+                  ir.assets
+                  |> lib.mapAttrs (name: asset: asset |> processors.storeObject |> lib.flatten |> lib.concatStrings)
+                  |> ir.template;
               in
               {
                 strings = lib.singleton html;
@@ -347,7 +359,7 @@ let
     pkgs:
     {
       name ? "htnl-bundle",
-      # FIXME support receiving basePath
+      processing ? { },
       htmlDocuments,
     }:
     htmlDocuments
@@ -356,7 +368,7 @@ let
         (
           acc: htmlDocumentPath: htmlDocument:
           let
-            inherit (process htmlDocument) html assets;
+            inherit (process processing htmlDocument) html assets;
 
             documentAssetLines =
               assets |> lib.mapAttrsToList (storePath: asset: ''cp --parents -r ${asset} "$out"'');

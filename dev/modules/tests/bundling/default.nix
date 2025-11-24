@@ -242,6 +242,38 @@
           }
           |> bundle pkgs
           |> (actual: lib.seq (assertEq actual.name "some-name") (pkgs.writeText "" ""));
+
+        "tests:bundling:base-path" =
+          {
+            processing.basePath = "/website/";
+            htmlDocuments = {
+              "index.html" =
+                h "html" [
+                  (h "body" [
+                    (h "a" { href = assetPath; } "Download path asset")
+                  ])
+                ]
+                |> document;
+            };
+          }
+          |> bundle pkgs
+          |> readFilesRecursive
+          |> (
+            actual:
+            lib.seq (assertEq actual {
+              "/index.html" =
+                [
+                  "<!DOCTYPE html>"
+                  "<html>"
+                  "<body>"
+                  ''<a href="/website${assetPath}">Download path asset</a>''
+                  "</body>"
+                  "</html>"
+                ]
+                |> lib.concatStrings;
+              ${builtins.unsafeDiscardStringContext assetPath} = "asset has content\n";
+            }) (pkgs.writeText "" "")
+          );
       };
 
       treefmt.settings.global.excludes = [ "dev/modules/tests/bundling/asset.txt" ];
