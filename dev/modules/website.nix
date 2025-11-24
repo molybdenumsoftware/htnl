@@ -26,6 +26,7 @@
             em
             head
             html
+            img
             link
             meta
             p
@@ -95,7 +96,10 @@
                 (p "It's tedious. It's unsafe. Stop it.")
                 (p "we are Nixers, we can make things. here is a ${config.metadata.description.plaintext}.")
               ])
-              (rootPath + "/dev/modules/graphics/logo.svg" |> lib.readFile |> raw)
+              (img {
+                src = rootPath + "/dev/modules/graphics/logo.svg";
+                alt = "Logo";
+              })
               (
                 let
                   dir = rootPath + "/bare/system-agnostic-tests";
@@ -193,9 +197,8 @@
       '';
     in
     {
-      packages = {
-        inherit website;
-      };
+      packages = { inherit website; };
+      checks = { inherit website; };
 
       make-shells.default.inputsFrom = [
         psArgs.config.packages.website
