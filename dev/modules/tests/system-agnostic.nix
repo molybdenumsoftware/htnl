@@ -20,5 +20,7 @@
               ${rootPath + "/bare"}/system-agnostic-tests.nix
             touch $out
           '';
+
+      treefmt.settings.global.excludes = [ "bare/system-agnostic-tests/asset.txt" ];
     };
 }

@@ -5,4 +5,5 @@ let
 in
 dir
 |> builtins.readDir
+|> lib.filterAttrs (fileName: _: lib.hasSuffix ".nix" fileName)
 |> lib.mapAttrs (fileName: _: import "${dir}/${fileName}" { inherit htnl lib; })

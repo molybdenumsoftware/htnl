@@ -83,7 +83,7 @@ let
           ])
         ];
         assets = lib.optionalAttrs isStoreObject {
-          ${value |> toString |> builtins.unsafeDiscardStringContext} = value;
+          ${value |> builtins.unsafeDiscardStringContext} = value;
         };
       };
 
@@ -157,7 +157,14 @@ let
       in
       {
         strings = lib.singleton html;
-        inherit (ir) assets;
+        assets =
+          ir.assets
+          |> lib.mapAttrs' (
+            attrName: value: {
+              name = builtins.unsafeDiscardStringContext value;
+              inherit value;
+            }
+          );
       };
 
     unknown =
@@ -366,12 +373,11 @@ in
 # public API
 {
   inherit
+    process
     serialize
     document
     bundle
     ;
-
-  process = ir: { inherit (process ir) html headings; };
 
   inherit (ctors) raw;
   polymorphic = {
