@@ -97,8 +97,8 @@
                 (p "we are Nixers, we can make things. here is a ${config.metadata.description.plaintext}.")
               ])
               (img {
-                src = rootPath + "/dev/modules/graphics/logo.svg";
-                alt = "Logo";
+                src = rootPath + "/dev/modules/graphics/banner.svg";
+                alt = "Banner";
               })
               (
                 let
