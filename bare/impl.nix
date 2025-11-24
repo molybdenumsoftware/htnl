@@ -78,7 +78,7 @@ let
           name
           (lib.optionals (isStoreObject || lib.isString value) [
             ''="''
-            ("${value}" |> lib.escapeXML)
+            (value |> builtins.unsafeDiscardStringContext |> lib.escapeXML)
             ''"''
           ])
         ];
@@ -156,11 +156,7 @@ let
           |> ir.template;
       in
       {
-        strings =
-          if builtins.getContext html == { } then
-            lib.singleton html
-          else
-            throw "`raw` string must have zero context; see documentation.";
+        strings = lib.singleton html;
         inherit (ir) assets;
       };
 
@@ -325,10 +321,12 @@ let
     ir:
     let
       result = processors.unknown ir;
+      html = result.strings |> lib.flatten |> lib.concatStrings;
+      context = builtins.getContext html;
     in
     {
       inherit (result) assets;
-      html = result.strings |> lib.flatten |> lib.concatStrings;
+      html = if context == { } then html else lib.trace context (throw "non-asset context detected");
       headings = lib.flatten result.headings;
     };
 

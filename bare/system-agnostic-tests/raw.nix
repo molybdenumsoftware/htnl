@@ -25,13 +25,6 @@ in
       |> serialize;
     expected = "<div> <  & </div>";
   };
-  testHasContext = {
-    expr = raw ''${./raw.nix}'' |> serialize;
-    expectedError = {
-      type = "ThrownError";
-      msg = "`raw` string must have zero context; see documentation.";
-    };
-  };
   testInvalidAsset = {
     expr = raw { invalid = "string"; } (assets: assets.invalid) |> serialize;
     expectedError = {
