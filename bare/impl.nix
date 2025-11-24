@@ -150,10 +150,7 @@ let
     raw =
       ir:
       let
-        html =
-          ir.assets
-          |> lib.mapAttrs (name: asset: "${asset}" |> builtins.unsafeDiscardStringContext)
-          |> ir.template;
+        html = ir.assets |> lib.mapAttrs (name: builtins.unsafeDiscardStringContext) |> ir.template;
       in
       {
         strings = lib.singleton html;
