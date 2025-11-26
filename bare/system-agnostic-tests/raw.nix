@@ -25,6 +25,10 @@ in
       |> serialize;
     expected = "<div> <  & </div>";
   };
+  testAsset = {
+    expr = raw { file = ./asset.txt; } (assets: ''<a href="${assets.file}">Download</a>'') |> serialize;
+    expected = ''<a href="${./asset.txt}">Download</a>'';
+  };
   testInvalidAsset = {
     expr = raw { invalid = "string"; } (assets: assets.invalid) |> serialize;
     expectedError = {
