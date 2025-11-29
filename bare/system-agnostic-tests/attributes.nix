@@ -35,6 +35,17 @@ in
     expected = ''<img alt="Photograph" src="photo.jpg">'';
   };
 
+  testDataAttributes = {
+    expr =
+      h "div" {
+        "data-toggle" = "modal";
+        "data-target" = "#myModal";
+        class = "btn";
+      } [ "Click me" ]
+      |> serialize;
+    expected = ''<div class="btn" data-target="#myModal" data-toggle="modal">Click me</div>'';
+  };
+
   boolean = {
     testNonTrue = {
       expr = h "br" { inert = false; };
