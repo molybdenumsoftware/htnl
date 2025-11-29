@@ -162,19 +162,16 @@ let
             firstNonGreaterOrphanIndex =
               acc.orphans
               |> lib.lists.findFirstIndex (orphan: orphan.level <= current.level) (lib.length acc.orphans);
-            subHeadings = acc.orphans |> lib.sublist 0 firstNonGreaterOrphanIndex |> map (lib.getAttr "orphan");
+            subHeadings = acc.orphans |> lib.sublist 0 firstNonGreaterOrphanIndex;
             new = {
-              inherit (current) content;
+              inherit (current) level content;
             }
             // lib.optionalAttrs (current ? id) { inherit (current) id; }
             // lib.optionalAttrs (lib.length subHeadings > 0) { inherit subHeadings; };
           in
           {
             orphans =
-              lib.optional (current.level != 1) {
-                inherit (current) level;
-                orphan = new;
-              }
+              lib.optional (current.level != 1) new
               ++ (acc.orphans |> lib.sublist firstNonGreaterOrphanIndex (lib.length acc.orphans));
             result = lib.optional (current.level == 1) new ++ acc.result;
           }
@@ -183,7 +180,7 @@ let
           orphans = [ ];
           result = [ ];
         }
-    |> (acc: (acc.orphans |> map (lib.getAttr "orphan")) ++ acc.result);
+    |> (acc: acc.orphans ++ acc.result);
 
   process =
     arg:

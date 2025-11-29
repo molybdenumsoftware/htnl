@@ -62,29 +62,52 @@ in
       ];
 
     expected = [
-      { content = "non-h1 root"; }
       {
+        level = 2;
+        content = "non-h1 root";
+      }
+      {
+        level = 1;
         content = "a";
         subHeadings = [
           {
+            level = 2;
             content = "b";
             id = "heading-bee";
             subHeadings = [
               {
+                level = 3;
                 content = "c";
-                subHeadings = [ { content = "d"; } ];
+                subHeadings = [
+                  {
+                    level = 4;
+                    content = "d";
+                  }
+                ];
               }
             ];
           }
           {
+            level = 2;
             content = "e";
-            subHeadings = [ { content = "f"; } ];
+            subHeadings = [
+              {
+                level = 3;
+                content = "f";
+              }
+            ];
           }
         ];
       }
       {
+        level = 1;
         content = "g";
-        subHeadings = [ { content = "h"; } ];
+        subHeadings = [
+          {
+            level = 3;
+            content = "h";
+          }
+        ];
       }
     ];
   };
