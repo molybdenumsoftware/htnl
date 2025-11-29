@@ -4,7 +4,7 @@ let
   h = htnl.polymorphic.element;
 in
 {
-  test = {
+  testFlat = {
     expr =
       [
         (h "h1" "Topic")
@@ -39,6 +39,52 @@ in
       {
         level = 2;
         content = "<em>Missing</em> id";
+      }
+    ];
+  };
+  testTree = {
+    expr =
+      [
+        (h "h2" "non-h1 root")
+        (h "h1" "a")
+        (h "h2" { id = "heading-bee"; } "b")
+        (h "h3" "c")
+        (h "h4" "d")
+        (h "h2" "e")
+        (h "h3" "f")
+        (h "h1" "g")
+        (h "h3" "h")
+      ]
+      |> process
+      |> lib.getAttrFromPath [
+        "headings"
+        "tree"
+      ];
+
+    expected = [
+      { content = "non-h1 root"; }
+      {
+        content = "a";
+        subHeadings = [
+          {
+            content = "b";
+            id = "heading-bee";
+            subHeadings = [
+              {
+                content = "c";
+                subHeadings = [ { content = "d"; } ];
+              }
+            ];
+          }
+          {
+            content = "e";
+            subHeadings = [ { content = "f"; } ];
+          }
+        ];
+      }
+      {
+        content = "g";
+        subHeadings = [ { content = "h"; } ];
       }
     ];
   };

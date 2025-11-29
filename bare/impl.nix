@@ -150,6 +150,41 @@ let
         throw "not supported";
   };
 
+  toHeadingsTree =
+    headings:
+    headings
+    |> lib.reverseList
+    |>
+      lib.foldl
+        (
+          acc: current:
+          let
+            firstNonGreaterOrphanIndex =
+              acc.orphans
+              |> lib.lists.findFirstIndex (orphan: orphan.level <= current.level) (lib.length acc.orphans);
+            subHeadings = acc.orphans |> lib.sublist 0 firstNonGreaterOrphanIndex |> map (lib.getAttr "orphan");
+            new = {
+              inherit (current) content;
+            }
+            // lib.optionalAttrs (current ? id) { inherit (current) id; }
+            // lib.optionalAttrs (lib.length subHeadings > 0) { inherit subHeadings; };
+          in
+          {
+            orphans =
+              lib.optional (current.level != 1) {
+                inherit (current) level;
+                orphan = new;
+              }
+              ++ (acc.orphans |> lib.sublist firstNonGreaterOrphanIndex (lib.length acc.orphans));
+            result = lib.optional (current.level == 1) new ++ acc.result;
+          }
+        )
+        {
+          orphans = [ ];
+          result = [ ];
+        }
+    |> (acc: (acc.orphans |> map (lib.getAttr "orphan")) ++ acc.result);
+
   process =
     arg:
     let
@@ -346,11 +381,15 @@ let
           result = processors.unknown ir;
           html = result.strings |> lib.flatten |> lib.concatStrings;
           context = builtins.getContext html;
+          headings = lib.flatten result.headings;
         in
         {
           inherit (result) assets;
           html = if context == { } then html else lib.trace context (throw "non-asset context detected");
-          headings.flat = lib.flatten result.headings;
+          headings = {
+            flat = headings;
+            tree = toHeadingsTree headings;
+          };
         };
     in
     if lib.isAttrs arg && !arg ? type then monomorphic arg else monomorphic { } arg;
