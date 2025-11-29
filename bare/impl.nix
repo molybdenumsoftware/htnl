@@ -350,7 +350,7 @@ let
         {
           inherit (result) assets;
           html = if context == { } then html else lib.trace context (throw "non-asset context detected");
-          headings = lib.flatten result.headings;
+          headings.flat = lib.flatten result.headings;
         };
     in
     if lib.isAttrs arg && !arg ? type then monomorphic arg else monomorphic { } arg;

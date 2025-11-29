@@ -16,7 +16,7 @@ in
         ])
       ]
       |> process
-      |> lib.getAttr "headings";
+      |> lib.getAttrFromPath [ "headings" "flat" ];
 
     expected = [
       {
