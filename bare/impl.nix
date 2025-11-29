@@ -150,7 +150,7 @@ let
         throw "not supported";
   };
 
-  toHeadingsTree =
+  toHeadingsNested =
     headings:
     headings
     |> lib.reverseList
@@ -388,7 +388,7 @@ let
           html = if context == { } then html else lib.trace context (throw "non-asset context detected");
           headings = {
             flat = headings;
-            tree = toHeadingsTree headings;
+            nested = toHeadingsNested headings;
           };
         };
     in

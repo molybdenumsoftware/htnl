@@ -58,7 +58,7 @@ in
       |> process
       |> lib.getAttrFromPath [
         "headings"
-        "tree"
+        "nested"
       ];
 
     expected = [
