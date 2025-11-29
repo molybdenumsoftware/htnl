@@ -187,8 +187,10 @@ let
                   else
                     {
                       inherit level;
-                      id = ir.attributes.id or null;
                       content = childrenResult.strings |> lib.flatten |> lib.concatStrings;
+                    }
+                    // lib.optionalAttrs (ir.attributes ? id) {
+                      inherit (ir.attributes) id;
                     };
                 attributesResult = processors.attributes ir.attributes;
               in

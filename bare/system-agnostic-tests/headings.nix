@@ -21,7 +21,6 @@ in
     expected = [
       {
         level = 1;
-        id = null;
         content = "Topic";
       }
       {
@@ -36,7 +35,6 @@ in
       }
       {
         level = 2;
-        id = null;
         content = "<em>Missing</em> id";
       }
     ];
