@@ -199,10 +199,12 @@
     {
       packages = { inherit website; };
       checks = { inherit website; };
-
-      make-shells.default.inputsFrom = [
-        psArgs.config.packages.website
-      ];
+      make-shells.default = {
+        packages = [ pkgs.nodePackages_latest.live-server ];
+        inputsFrom = [
+          psArgs.config.packages.website
+        ];
+      };
 
       files.files = [
         {
