@@ -17,6 +17,7 @@ let
       };
       class = {
         experimental = false;
+        list.delimiter = " ";
       };
       contenteditable = {
         experimental = false;

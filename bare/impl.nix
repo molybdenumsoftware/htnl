@@ -39,6 +39,8 @@ let
         value
       else if lib.isDerivation value then
         value
+      # else if facts ? list then
+      #   value
       else
         assert lib.assertMsg (lib.isStringLike value) "non-string-like attribute value";
         value;
