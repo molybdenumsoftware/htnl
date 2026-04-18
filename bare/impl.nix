@@ -370,7 +370,7 @@ let
                 else if ir.type or null == constants.raw then
                   processors.raw ir
                 else
-                  processors.attributes ir
+                  lib.trace ir (throw "cannot be serialized")
               else
                 throw "cannot serialize value (type: ${type})";
           };

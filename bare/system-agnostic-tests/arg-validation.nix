@@ -12,4 +12,21 @@ in
       };
     };
   };
+  cannotBeSerialized = {
+    testUnknownSet = {
+      expr = { type = "some unknown type"; } |> htnl.process;
+      expectedError = {
+        type = "ThrownError";
+        msg = "cannot be serialized";
+      };
+    };
+    testUnknownValue = {
+      expr = 0 |> htnl.process;
+      expectedError = {
+        type = "ThrownError";
+
+        msg = "cannot serialize value \\(type: int\\)";
+      };
+    };
+  };
 }
