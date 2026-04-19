@@ -39,6 +39,9 @@ let
         value
       else if lib.isDerivation value then
         value
+      else if lib.isList value then
+        assert lib.assertMsg (facts ? list) "list value provided for non-list attribute";
+        value
       else
         assert lib.assertMsg (lib.isStringLike value) "non-string-like attribute value";
         value;
@@ -224,7 +227,7 @@ let
                     // lib.optionalAttrs (ir.attributes ? id) {
                       inherit (ir.attributes) id;
                     };
-                attributesResult = processors.attributes ir.attributes;
+                attributesResult = processors.attributes ir.tagName ir.attributes;
               in
               {
                 strings = [
@@ -247,16 +250,24 @@ let
               };
 
             attribute =
-              name: value:
+              tagName: name: value:
               let
                 isStoreObject = lib.isPath value || lib.isDerivation value || value ? outPath;
+                facts = spec.elements.${tagName}.attributes.${name};
               in
               {
                 strings = [
                   name
-                  (lib.optionals (isStoreObject || lib.isString value) [
+                  (lib.optionals (!lib.isBool value) [
                     ''="''
-                    (if isStoreObject then processors.storeObject value else value |> lib.escapeXML)
+                    (
+                      if isStoreObject then
+                        processors.storeObject value
+                      else if lib.isList value then
+                        lib.concatStringsSep facts.list.delimiter value |> lib.escapeXML
+                      else
+                        value |> lib.escapeXML
+                    )
                     ''"''
                   ])
                 ];
@@ -274,7 +285,7 @@ let
               |> lib.concat [ basePath ];
 
             attributes =
-              attributes:
+              tagName: attributes:
               attributes
               |> lib.attrsToList
               |>
@@ -283,7 +294,7 @@ let
                     acc:
                     { name, value }:
                     let
-                      processedAttr = processors.attribute name value;
+                      processedAttr = processors.attribute tagName name value;
                     in
                     {
                       strings = [

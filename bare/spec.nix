@@ -4,9 +4,43 @@ let
     attributes = {
       accesskey = {
         experimental = false;
+        list.delimiter = " ";
       };
       anchor = {
         experimental = true;
+      };
+      aria-controls = {
+        experimental = false;
+        list.delimiter = " ";
+      };
+      aria-describedby = {
+        experimental = false;
+        list.delimiter = " ";
+      };
+      aria-details = {
+        experimental = false;
+        list.delimiter = " ";
+      };
+      aria-dropeffect = {
+        experimental = false;
+        deprecated = true;
+        list.delimiter = " ";
+      };
+      aria-flowto = {
+        experimental = false;
+        list.delimiter = " ";
+      };
+      aria-labelledby = {
+        experimental = false;
+        list.delimiter = " ";
+      };
+      aria-owns = {
+        experimental = false;
+        list.delimiter = " ";
+      };
+      aria-relevant = {
+        experimental = false;
+        list.delimiter = " ";
       };
       autocapitalize = {
         experimental = false;
@@ -17,6 +51,7 @@ let
       };
       class = {
         experimental = false;
+        list.delimiter = " ";
       };
       contenteditable = {
         experimental = false;
@@ -57,9 +92,11 @@ let
       };
       itemprop = {
         experimental = false;
+        list.delimiter = " ";
       };
       itemref = {
         experimental = false;
+        list.delimiter = " ";
       };
       itemscope = {
         boolean = true;
@@ -67,6 +104,7 @@ let
       };
       itemtype = {
         experimental = false;
+        list.delimiter = " ";
       };
       lang = {
         experimental = false;
@@ -79,6 +117,10 @@ let
       };
       popover = {
         experimental = false;
+      };
+      role = {
+        experimental = false;
+        list.delimiter = " ";
       };
       slot = {
         experimental = false;
@@ -132,6 +174,7 @@ let
           ping = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           referrerpolicy = {
             deprecated = false;
@@ -140,6 +183,7 @@ let
           rel = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           target = {
             deprecated = false;
@@ -198,6 +242,7 @@ let
           coords = {
             deprecated = false;
             experimental = false;
+            list.delimiter = ",";
           };
           download = {
             deprecated = false;
@@ -210,6 +255,7 @@ let
           ping = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           referrerpolicy = {
             deprecated = false;
@@ -218,6 +264,7 @@ let
           rel = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           shape = {
             deprecated = false;
@@ -824,6 +871,7 @@ let
           accept = {
             deprecated = true;
             experimental = false;
+            list.delimiter = ",";
           };
           accept-charset = {
             deprecated = false;
@@ -836,6 +884,7 @@ let
           autocomplete = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           name = {
             deprecated = false;
@@ -849,6 +898,7 @@ let
           rel = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
         };
       };
@@ -1132,6 +1182,7 @@ let
           sizes = {
             deprecated = false;
             experimental = false;
+            list.delimiter = ",";
           };
           src = {
             deprecated = false;
@@ -1140,6 +1191,7 @@ let
           srcset = {
             deprecated = false;
             experimental = false;
+            list.delimiter = ",";
           };
           width = {
             deprecated = false;
@@ -1183,6 +1235,7 @@ let
           accept = {
             deprecated = false;
             experimental = false;
+            list.delimiter = ",";
           };
           alt = {
             deprecated = false;
@@ -1195,6 +1248,7 @@ let
           autocomplete = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           autofocus = {
             boolean = true;
@@ -1405,6 +1459,7 @@ let
           blocking = {
             deprecated = false;
             experimental = true;
+            list.delimiter = " ";
           };
           crossorigin = {
             deprecated = false;
@@ -1430,10 +1485,12 @@ let
           imagesizes = {
             deprecated = false;
             experimental = false;
+            list.delimiter = ",";
           };
           imagesrcset = {
             deprecated = false;
             experimental = false;
+            list.delimiter = ",";
           };
           integrity = {
             deprecated = false;
@@ -1450,10 +1507,12 @@ let
           rel = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           sizes = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           title = {
             deprecated = false;
@@ -1749,6 +1808,7 @@ let
           for = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           form = {
             deprecated = false;
@@ -1900,6 +1960,7 @@ let
           blocking = {
             deprecated = false;
             experimental = true;
+            list.delimiter = " ";
           };
           crossorigin = {
             deprecated = false;
@@ -1966,6 +2027,7 @@ let
           autocomplete = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           autofocus = {
             boolean = true;
@@ -2032,10 +2094,12 @@ let
           srcset = {
             deprecated = false;
             experimental = false;
+            list.delimiter = ",";
           };
           sizes = {
             deprecated = false;
             experimental = false;
+            list.delimiter = ",";
           };
           media = {
             deprecated = false;
@@ -2073,6 +2137,7 @@ let
           blocking = {
             deprecated = false;
             experimental = true;
+            list.delimiter = " ";
           };
           media = {
             deprecated = false;
@@ -2186,6 +2251,7 @@ let
           headers = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           rowspan = {
             deprecated = false;
@@ -2269,6 +2335,7 @@ let
           autocomplete = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           autocorrect = {
             deprecated = false;
@@ -2377,6 +2444,7 @@ let
           headers = {
             deprecated = false;
             experimental = false;
+            list.delimiter = " ";
           };
           rowspan = {
             deprecated = false;
