@@ -31,7 +31,8 @@ let
     attribute =
       tagName: name: value:
       let
-        facts = spec.elements.${tagName}.attributes.${name} or null;
+        attrs = spec.elements.${tagName}.attributes;
+        facts = attrs.${name} or (if lib.match "^data-.*" name != null then attrs."data-*" else null);
       in
       assert lib.assertMsg (facts != null) "attribute ${name} not allowed on tag ${tagName}";
       if facts.boolean or false then
