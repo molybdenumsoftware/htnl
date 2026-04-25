@@ -424,7 +424,7 @@ let
           in
           [
             acc
-            ''mkdir -p "$out/${builtins.dirOf htmlDocumentPath}"''
+            ''mkdir -p "$out/${dirOf htmlDocumentPath}"''
             ''echo -n ${lib.escapeShellArg html} > "$out/${htmlDocumentPath}"''
             documentAssetLines
           ]
