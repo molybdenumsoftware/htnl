@@ -6,38 +6,70 @@
 
   inputs = {
     flake-parts = {
-      url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs-lib.follows = "nixpkgs-lib";
+      url = "github:hercules-ci/flake-parts?rev=0010412d62a25d959151790968765a70c436598b";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
     };
 
-    nixpkgs-lib.url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz";
+    asset-for-testing = {
+      flake = false;
+      url = "http://httpbin.org/robots.txt";
+    };
+
+    files.url = "github:mightyiam/files";
+
+    git-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-compat.follows = "dedupe_flake-compat";
+      };
+    };
+
+    highlightjs-stylesheet = {
+      flake = false;
+      url = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/base16/gruvbox-dark-hard.min.css";
+    };
+
+    highlightjs-esmodule = {
+      flake = false;
+      url = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js";
+    };
+
+    highlightjs-nix = {
+      flake = false;
+      url = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/nix.min.js";
+    };
+
+    import-tree.url = "github:vic/import-tree";
+
+    make-shell = {
+      url = "github:nicknovitski/make-shell";
+      inputs.flake-compat.follows = "dedupe_flake-compat";
+    };
+
+    nixpkgs.url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz";
+
+    systems.url = "github:nix-systems/default";
+
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+  };
+
+  # _additional_ `inputs` only for deduplication
+  inputs = {
+    dedupe_flake-compat.url = "github:edolstra/flake-compat";
   };
 
   outputs =
     inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
-      { lib, ... }:
-      {
-        _module.args.rootPath = ./.;
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      _module.args.rootPath = ./.;
 
-        systems = [ ];
-
-        imports = [
-          inputs.flake-parts.flakeModules.partitions
-          ./modules/lib.nix
-        ];
-
-        partitionedAttrs = lib.genAttrs [
-          "checks"
-          "devShells"
-          "formatter"
-          "packages"
-        ] (_: "dev");
-
-        partitions.dev = {
-          extraInputsFlake = ./dev;
-          module = ./dev/imports.nix;
-        };
-      }
-    );
+      imports = [
+        (inputs.import-tree ./modules)
+      ];
+    };
 }

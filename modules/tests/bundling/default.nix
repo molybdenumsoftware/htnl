@@ -276,6 +276,6 @@
           );
       };
 
-      treefmt.settings.global.excludes = [ "dev/modules/tests/bundling/asset.txt" ];
+      treefmt.settings.global.excludes = [ "modules/tests/bundling/asset.txt" ];
     };
 }

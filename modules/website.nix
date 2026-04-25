@@ -97,7 +97,7 @@
                 (p "we are Nixers, we can make things. here is a ${config.metadata.description.plaintext}.")
               ])
               (img {
-                src = rootPath + "/dev/modules/graphics/banner.svg";
+                src = rootPath + "/modules/graphics/banner.svg";
                 alt = "Banner";
               })
               (
@@ -128,9 +128,7 @@
                 ])
 
                 (pre { class = "overflow-scroll"; } (
-                  code { class = "language-nix"; } (
-                    rootPath + "/dev/modules/tests/bundling/default.nix" |> lib.readFile
-                  )
+                  code { class = "language-nix"; } (rootPath + "/modules/tests/bundling/default.nix" |> lib.readFile)
                 ))
               ])
 
