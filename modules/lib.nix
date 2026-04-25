@@ -1,7 +1,6 @@
 {
   lib,
   rootPath,
-  config,
   ...
 }:
 {
@@ -9,5 +8,4 @@
     type = lib.types.unspecified;
     default = import rootPath { inherit lib; };
   };
-  config.flake = { inherit (config) lib; };
 }
