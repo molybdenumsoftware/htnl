@@ -1,1 +1,1 @@
-import ./bare/impl.nix
+import ./bare/lib.nix

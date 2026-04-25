@@ -1,5 +1,5 @@
 let
-  htnl = import ./impl.nix { inherit lib; };
+  htnl = import ./lib.nix { inherit lib; };
   lib = import <nixpkgs/lib>;
   dir = ./system-agnostic-tests;
 in

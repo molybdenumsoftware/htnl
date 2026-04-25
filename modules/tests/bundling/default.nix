@@ -10,7 +10,8 @@
   perSystem =
     { pkgs, ... }:
     let
-      inherit (config.lib) document bundle raw;
+      inherit (config.lib) document raw;
+      inherit (pkgs.htnl) bundle;
       inherit (config.utils) assertEq readFilesRecursive;
       h = config.lib.polymorphic.element;
       assetDrv = pkgs.writeText "file.txt" "some text";
@@ -31,7 +32,7 @@
                 |> document;
             };
           }
-          |> bundle pkgs
+          |> bundle
           |> readFilesRecursive
           |> (
             actual:
@@ -62,7 +63,7 @@
                 |> document;
             };
           }
-          |> bundle pkgs
+          |> bundle
           |> readFilesRecursive
           |> (
             actual:
@@ -93,7 +94,7 @@
                 |> document;
             };
           }
-          |> bundle pkgs
+          |> bundle
           |> readFilesRecursive
           |> (
             actual:
@@ -142,7 +143,7 @@
                 |> document;
             };
           }
-          |> bundle pkgs
+          |> bundle
           |> readFilesRecursive
           |> (
             actual:
@@ -178,7 +179,7 @@
           {
             htmlDocuments."index.html" = h "html" [ ] |> document;
           }
-          |> bundle pkgs
+          |> bundle
           |> readFilesRecursive
           |> (
             actual:
@@ -200,7 +201,7 @@
                 |> document;
             };
           }
-          |> bundle pkgs
+          |> bundle
           |> readFilesRecursive
           |> (
             actual:
@@ -224,7 +225,7 @@
           {
             htmlDocuments = { };
           }
-          |> bundle pkgs
+          |> bundle
           |> readFilesRecursive
           |> (actual: lib.seq (assertEq actual { }) (pkgs.writeText "" ""));
 
@@ -232,7 +233,7 @@
           {
             htmlDocuments = { };
           }
-          |> bundle pkgs
+          |> bundle
           |> (actual: lib.seq (assertEq actual.name "htnl-bundle") (pkgs.writeText "" ""));
 
         "tests:bundling:name:provided" =
@@ -240,7 +241,7 @@
             htmlDocuments = { };
             name = "some-name";
           }
-          |> bundle pkgs
+          |> bundle
           |> (actual: lib.seq (assertEq actual.name "some-name") (pkgs.writeText "" ""));
 
         "tests:bundling:base-path" =
@@ -256,7 +257,7 @@
                 |> document;
             };
           }
-          |> bundle pkgs
+          |> bundle
           |> readFilesRecursive
           |> (
             actual:

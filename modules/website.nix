@@ -13,10 +13,10 @@
 
       website =
         let
+          inherit (pkgs.htnl) bundle;
           inherit (config.lib)
             raw
             document
-            bundle
             ;
           inherit (config.lib.polymorphic.partials)
             a
@@ -170,7 +170,7 @@
           name = "${config.metadata.title}-website-bundle";
           htmlDocuments."index.html" = indexHtml;
         })
-        |> bundle pkgs
+        |> bundle
         |> (
           bundle:
           pkgs.runCommand "${config.metadata.title}-website"

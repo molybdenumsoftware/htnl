@@ -403,37 +403,6 @@ let
     if lib.isAttrs arg && !arg ? type then monomorphic arg else monomorphic { } arg;
 
   serialize = ir: ir |> process |> lib.getAttr "html";
-
-  bundle =
-    pkgs:
-    {
-      name ? "htnl-bundle",
-      processing ? { },
-      htmlDocuments,
-    }:
-    htmlDocuments
-    |>
-      lib.foldlAttrs
-        (
-          acc: htmlDocumentPath: htmlDocument:
-          let
-            inherit (process processing htmlDocument) html assets;
-
-            documentAssetLines =
-              assets |> lib.mapAttrsToList (storePath: asset: ''cp --parents -r ${asset} "$out"'');
-          in
-          [
-            acc
-            ''mkdir -p "$out/${dirOf htmlDocumentPath}"''
-            ''echo -n ${lib.escapeShellArg html} > "$out/${htmlDocumentPath}"''
-            documentAssetLines
-          ]
-        )
-        # support empty bundles
-        [ ''mkdir -p "$out"'' ]
-    |> lib.flatten
-    |> lib.concatLines
-    |> pkgs.runCommand name { };
 in
 # public API
 {
@@ -441,7 +410,6 @@ in
     process
     serialize
     document
-    bundle
     ;
 
   inherit (ctors) raw;
