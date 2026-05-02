@@ -111,6 +111,9 @@ let
     monomorphic =
       tagName_: attributes_: children_:
       let
+        # TODO: use korora here first.
+        # Make a type that takes an struct of these three attrs
+        # Run time fetch korora but allow override
         tagName = validators.tagName tagName_;
         attributes = validators.attributes tagName attributes_;
         children = validators.children tagName children_;
