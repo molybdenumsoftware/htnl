@@ -205,7 +205,7 @@ let
                   "<!DOCTYPE html>"
                   contentResult.strings
                 ];
-                inherit (contentResult) headings assets;
+                inherit (contentResult) hasError headings assets;
               };
 
             element =
@@ -230,6 +230,8 @@ let
                 attributesResult = processors.attributes ir.tagName ir.attributes;
               in
               {
+                # TODO
+                hasError = childrenResult.hasError;
                 strings = [
                   "<"
                   ir.tagName
@@ -256,6 +258,8 @@ let
                 facts = spec.elements.${tagName}.attributes.${name};
               in
               {
+                # TODO
+                hasError = false;
                 strings = [
                   name
                   (lib.optionals (!lib.isBool value) [
@@ -306,6 +310,8 @@ let
                     }
                   )
                   {
+                    # TODO
+                    hasError = true;
                     strings = [ ];
                     assets = { };
                   };
@@ -325,6 +331,7 @@ let
                     childResult = processors.unknown child;
                   in
                   {
+                    hasError = childResult.hasError || acc.hasError;
                     strings = [
                       acc.strings
                       childResult.strings
@@ -337,6 +344,7 @@ let
                   }
                 )
                 {
+                  hasError = false;
                   strings = [ ];
                   headings = [ ];
                   assets = { };
@@ -351,6 +359,8 @@ let
                   |> ir.template;
               in
               {
+                # TODO
+                hasError = false;
                 strings = lib.singleton html;
                 assets =
                   ir.assets
