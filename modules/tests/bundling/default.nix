@@ -110,8 +110,7 @@
                 ]
                 |> lib.concatStrings;
               ${builtins.unsafeDiscardStringContext assetFlakeInput} = ''
-                User-agent: *
-                Disallow: /deny
+                hello
               '';
             }) (pkgs.writeText "" "")
           );
@@ -169,8 +168,7 @@
               ${builtins.unsafeDiscardStringContext assetDrv} = "some text";
               ${builtins.unsafeDiscardStringContext assetPath} = "asset has content\n";
               ${builtins.unsafeDiscardStringContext assetFlakeInput} = ''
-                User-agent: *
-                Disallow: /deny
+                hello
               '';
             }) (pkgs.writeText "" "")
           );

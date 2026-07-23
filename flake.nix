@@ -12,7 +12,7 @@
 
     asset-for-testing = {
       flake = false;
-      url = "http://httpbin.org/robots.txt";
+      url = "https://raw.githubusercontent.com/cdepillabout/small-example-text-files/main/hello.txt";
     };
 
     files.url = "github:mightyiam/files";
