@@ -19,9 +19,15 @@ let
   validators = {
     tagName =
       tagName:
-      assert lib.isString tagName;
-      assert lib.match "[0-9a-zA-Z]+" tagName == [ ];
-      tagName;
+      let
+        type = lib.typeOf tagName;
+      in
+      if type != "string" then
+        "non-string tag name; type: ${type}"
+      else if lib.match "[0-9a-zA-Z]+" tagName == [ ] then
+        true
+      else
+        "invalid char";
 
     attributes =
       tagName: attributes:
@@ -109,9 +115,8 @@ let
       };
 
     monomorphic =
-      tagName_: attributes_: children_:
+      tagName: attributes_: children_:
       let
-        tagName = validators.tagName tagName_;
         attributes = validators.attributes tagName attributes_;
         children = validators.children tagName children_;
       in
@@ -145,7 +150,7 @@ let
         if isVoid then
           partial argB [ ]
           // {
-            __functor = _: _: throw "attempt to pass children to void element ${tagName}";
+            __functor = self: extra: self // { attemptToPassChildren.type = lib.typeOf extra; };
           }
         else
           children: children |> lib.toList |> partial argB
@@ -211,6 +216,7 @@ let
             element =
               ir:
               let
+                tagNameValidation = validators.tagName ir.tagName;
                 childrenResult = processors.fragment ir.children;
                 heading =
                   let
@@ -231,7 +237,7 @@ let
               in
               {
                 # TODO
-                hasError = childrenResult.hasError;
+                hasError = childrenResult.hasError || tagNameValidation != true;
                 strings = [
                   "<"
                   ir.tagName
