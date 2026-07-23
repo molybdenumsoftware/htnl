@@ -317,32 +317,29 @@ let
             };
 
             fragment =
-              ir:
-              ir
-              |>
-                lib.foldl
-                  (
-                    acc: child:
-                    let
-                      childResult = processors.unknown child;
-                    in
-                    {
-                      strings = [
-                        acc.strings
-                        childResult.strings
-                      ];
-                      headings = [
-                        acc.headings
-                        childResult.headings
-                      ];
-                      assets = acc.assets // childResult.assets;
-                    }
-                  )
+              lib.foldl
+                (
+                  acc: child:
+                  let
+                    childResult = processors.unknown child;
+                  in
                   {
-                    strings = [ ];
-                    headings = [ ];
-                    assets = { };
-                  };
+                    strings = [
+                      acc.strings
+                      childResult.strings
+                    ];
+                    headings = [
+                      acc.headings
+                      childResult.headings
+                    ];
+                    assets = acc.assets // childResult.assets;
+                  }
+                )
+                {
+                  strings = [ ];
+                  headings = [ ];
+                  assets = { };
+                };
 
             raw =
               ir:
