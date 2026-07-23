@@ -6,20 +6,36 @@ in
 {
   invalid = {
     testEmpty = {
-      expr = h "" [ ];
-      expectedError.type = "AssertionError";
+      expr = h "" [ ] |> serialize;
+      expectedError.msg = /* html */ ''
+        <>
+        ^^ empty tag name
+        </>
+      '';
     };
     testNonString = {
-      expr = h 100 [ ];
-      expectedError.type = "AssertionError";
+      expr = h 100 [ ] |> serialize;
+      expectedError.msg = /* html */ ''
+        <>
+        ^^ non-string tag name; type: number, value: `100`
+        </>
+      '';
     };
     testNonAlphaNum = {
-      expr = h "has-hyphen" [ ];
-      expectedError.type = "AssertionError";
+      expr = h "has-hyphen" [ ] |> serialize;
+      expectedError.msg = /* html */ ''
+        <has-hypen>
+            ^ invalid char
+        </has-hyphen>
+      '';
     };
     testOutOfRange = {
-      expr = h "¢" [ ];
-      expectedError.type = "AssertionError";
+      expr = h "¢" [ ] |> serialize;
+      expectedError.msg = /* html */ ''
+        <¢>
+         ^ invalid char
+        </¢>
+      '';
     };
   };
   valid = {

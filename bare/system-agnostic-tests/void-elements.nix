@@ -14,25 +14,25 @@ in
   };
   childrenErrors = {
     testList = {
-      expr = h "hr" { } [ ];
-      expectedError = {
-        type = "ThrownError";
-        msg = "attempt to pass children to void element hr";
-      };
+      expr = h "hr" { } [ ] |> serialize;
+      expectedError.msg = /* html */ ''
+        <hr>
+        ^^^^ void element received extra argument; type: list
+      '';
     };
     testElement = {
       expr = h "br" { } (h "p" "foo");
-      expectedError = {
-        type = "ThrownError";
-        msg = "attempt to pass children to void element br";
-      };
+      expectedError.msg = /* html */ ''
+        <br>
+        ^^^^ void element received extra argument; type: set
+      '';
     };
     testText = {
       expr = h "img" { } "text";
-      expectedError = {
-        type = "ThrownError";
-        msg = "attempt to pass children to void element img";
-      };
+      expectedError.msg = /* html */ ''
+        <img>
+        ^^^^^ void element received extra argument; type: string
+      '';
     };
   };
 

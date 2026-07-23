@@ -6,23 +6,22 @@ in
 {
   testInText = {
     expr = "${./context-forbidden.nix}" |> serialize;
-    expectedError = {
-      type = "ThrownError";
-      msg = "non-asset context detected";
-    };
+    expectedError.msg = /* htnl */ ''
+      text node with non-asset context
+    '';
   };
   testInElement = {
     expr = h "p" "${./context-forbidden.nix}" |> serialize;
-    expectedError = {
-      type = "ThrownError";
-      msg = "non-asset context detected";
-    };
+    expectedError.msg = /* htnl */ ''
+      <p>
+        text node with non-asset context [0]
+      </p>
+    '';
   };
   testInRaw = {
     expr = raw "${./context-forbidden.nix}" |> serialize;
-    expectedError = {
-      type = "ThrownError";
-      msg = "non-asset context detected";
-    };
+    expectedError.msg = /* htnl */ ''
+      raw node with non-asset context
+    '';
   };
 }

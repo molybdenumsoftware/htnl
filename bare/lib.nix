@@ -311,6 +311,7 @@ let
                   };
 
             text = ir: {
+              hasError = false;
               strings = lib.escapeXML ir;
               headings = [ ];
               assets = { };
@@ -389,7 +390,7 @@ let
           headings = lib.flatten result.headings;
         in
         {
-          inherit (result) assets;
+          inherit (result) hasError assets;
           html = if context == { } then html else lib.trace context (throw "non-asset context detected");
           headings = {
             flat = headings;
@@ -399,7 +400,7 @@ let
     in
     if lib.isAttrs arg && !arg ? type then monomorphic arg else monomorphic { } arg;
 
-  serialize = ir: ir |> process |> lib.getAttr "html";
+  serialize = ir: ir |> process |> ({ hasError, html, ... }: if hasError then throw html else html);
 in
 # public API
 {

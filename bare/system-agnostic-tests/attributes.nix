@@ -23,17 +23,19 @@ in
     };
 
     testNotAllowed = {
-      expr = h "br" {
-        id = [
-          "id1"
-          "id2"
-        ];
-      };
+      expr =
+        h "br" {
+          id = [
+            "id1"
+            "id2"
+          ];
+        }
+        |> serialize;
 
-      expectedError = {
-        type = "ThrownError";
-        msg = "list value provided for non-list attribute";
-      };
+      expectedError.msg = ''
+        <br id>
+            ^^ invalid attribute value; type: list
+      '';
     };
 
     testSizes = {
@@ -120,18 +122,18 @@ in
 
   invalid = {
     testNonExistent = {
-      expr = h "div" { "no-such-attr" = "nope"; } [ ];
-      expectedError = {
-        type = "ThrownError";
-        msg = "attribute no-such-attr not allowed on tag div";
-      };
+      expr = h "div" { "no-such-attr" = "nope"; } [ ] |> serialize;
+      expectedError.msg = ''
+        <div no-such-attr="nope"></div>
+             ^^^^^^^^^^^^ unknown attribute
+      '';
     };
     testNotAllowed = {
-      expr = h "p" { href = "https://fulltimenix.com"; } [ ];
-      expectedError = {
-        type = "ThrownError";
-        msg = "attribute href not allowed on tag p";
-      };
+      expr = h "p" { href = "https://fulltimenix.com"; } [ ] |> serialize;
+      expectedError.msg = ''
+        <div href="nope"></div>
+             ^^^^ unknown attribute
+      '';
     };
   };
 
@@ -147,11 +149,11 @@ in
 
   boolean = {
     testNonTrue = {
-      expr = h "br" { inert = false; };
-      expectedError = {
-        type = "ThrownError";
-        msg = "non-true value for boolean attribute `inert` of tag `br`";
-      };
+      expr = h "br" { inert = false; } |> serialize;
+      expectedError.msg = ''
+        <br inert>
+            ^^^^^ non-true value for boolean attribute
+      '';
     };
     test = {
       expr = h "hr" { autofocus = true; } |> serialize;

@@ -6,11 +6,10 @@ in
 {
   # raw content? Yes, but be careful, okay?
   testNonString = {
-    expr = raw 0;
-    expectedError = {
-      type = "ThrownError";
-      msg = "first argument to `raw` must be string or attrset";
-    };
+    expr = raw 0 |> serialize;
+    expectedError.msg = /* html */ ''
+      invalid first argument to `raw`; type: number, value: `0`
+    '';
   };
   testSingle = {
     expr = h "div" (raw " < ") |> serialize;
@@ -30,17 +29,15 @@ in
     expected = ''<a href="${./asset.txt}">Download</a>'';
   };
   testInvalidAsset = {
-    expr = raw { invalid = "string"; } (assets: assets.invalid) |> serialize;
-    expectedError = {
-      type = "ThrownError";
-      msg = "`raw` received invalid asset";
-    };
+    expr = raw { invalid = "foo"; } (assets: assets.invalid) |> serialize;
+    expectedError.msg = /* html */ ''
+      invalid asset given to `raw`; type: string
+    '';
   };
   testNonFunctionSecondArg = {
-    expr = raw { } "";
-    expectedError = {
-      type = "ThrownError";
-      msg = "second argument to `raw` must be a function";
-    };
+    expr = raw { } "" |> serialize;
+    expectedError.msg = /* html */ ''
+      invalid second argument to `raw`; type: string
+    '';
   };
 }
